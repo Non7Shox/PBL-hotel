@@ -4,50 +4,59 @@
 
 {% block extra_css %}
 <style>
-    /* Контейнер интерактивной проекции */
+    /* Главный контейнер, фиксированный под ширину 750px */
     .projection-container {
-        background: #0f172a; /* Тёмный инженерный фон */
+        background: #0f172a;
         border-radius: 16px;
-        padding: 25px;
+        padding: 20px;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         border: 1px solid #1e293b;
+        max-width: 790px; /* 750px картинка + внутренние отступы */
+        margin: 0 auto;
     }
 
-    /* Эффект объёмного наклона проекции */
+    /* Рамка строго под размер изображения */
     .projection-viewport {
-        perspective: 1200px;
         position: relative;
-        overflow: hidden;
         border-radius: 12px;
+        overflow: hidden;
+        background: #020617;
+        padding: 10px;
+        border: 1px solid #1e293b;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .projection-card {
-        transition: transform 0.5s ease, box-shadow 0.5s ease;
-        transform: perspective(1000px) rotateX(10deg) scale(0.97);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        position: relative;
+        display: inline-block;
+        width: 100%;
+        text-align: center;
     }
 
-    .projection-viewport:hover .projection-card {
-        transform: perspective(1000px) rotateX(0deg) scale(1);
-    }
-
+    /* Картинка в исходном размере 750px с повышенной чёткостью */
     .projection-img {
         width: 100%;
         max-width: 750px;
-        margin: 0 auto;
+        height: auto;
         display: block;
+        margin: 0 auto;
         border-radius: 8px;
+        /* Увеличение четкости линий схемы */
+        image-rendering: -webkit-optimize-contrast;
+        filter: contrast(105%) brightness(102%);
     }
 
-    /* Кнопки меток номеров на схеме */
+    /* Кнопки меток номеров */
     .hotspot-btn {
         transform: translate(-50%, -50%);
         font-weight: 700;
         font-size: 0.85rem;
-        padding: 6px 12px;
+        padding: 6px 14px;
         border-radius: 20px;
         box-shadow: 0 0 12px rgba(13, 110, 253, 0.6);
-        transition: all 0.2s ease-in-out;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
         white-space: nowrap;
     }
 
@@ -76,13 +85,11 @@
 
 {% if floors %}
 <div class="row justify-content-center">
-    <div class="col-lg-10">
+    <div class="col-12">
         <div class="projection-container">
 
-            <!-- Панель управления слева сверху: Переключатель этажей -->
-            <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-3 border-bottom border-secondary gap-3">
-
-                <!-- КНОПКИ ПЕРЕКЛЮЧЕНИЯ ЭТАЖЕЙ СЛЕВА -->
+            <!-- Панель управления: Переключатель этажей -->
+            <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 pb-3 border-bottom border-secondary gap-3">
                 <div class="d-flex align-items-center gap-2">
                     <span class="text-light me-2 fw-bold"><i class="bi bi-building-gear me-1"></i> Этаж:</span>
                     <ul class="nav nav-pills" id="floorPills" role="tablist">
@@ -100,22 +107,20 @@
                         {% endfor %}
                     </ul>
                 </div>
-
-                <small class="text-secondary"><i class="bi bi-mouse me-1"></i> Наведите для выравнивания</small>
             </div>
 
-            <!-- Содержимое для каждого этажа -->
+            <!-- Содержимое этажа -->
             <div class="tab-content" id="floorPillsContent">
                 {% for f in floors %}
                     <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="pills-floor-{{ f.id }}" role="tabpanel">
 
                         <div class="projection-viewport">
-                            <div class="projection-card position-relative d-inline-block w-100 text-center">
+                            <div class="projection-card">
 
                                 {% if f.plan_image %}
                                     <img src="{{ f.plan_image.url }}" class="projection-img img-fluid" alt="План {{ f.number }} этажа">
 
-                                    <!-- Кнопки комнат текущего этажа -->
+                                    <!-- Кнопки комнат -->
                                     {% for room in f.rooms.all %}
                                         <a href="{% url 'rooms:room_detail' room.id %}"
                                            class="btn btn-primary hotspot-btn position-absolute border border-white"
@@ -126,7 +131,7 @@
                                         </a>
                                     {% endfor %}
                                 {% else %}
-                                    <div class="py-5 text-light">
+                                    <div class="py-5 text-light text-center">
                                         <i class="bi bi-image-alt fs-1 text-muted"></i>
                                         <p class="mt-2">Загрузите фото плана для {{ f.number }} этажа в админке.</p>
                                     </div>
