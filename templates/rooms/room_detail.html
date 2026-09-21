@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ room.title }} — Grand Hotel{% endblock %}
+
+{% block extra_css %}
+<style>
+    .iframe-3d {
+        width: 100%;
+        height: 550px;
+        border: 0;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+ <nav aria-label="breadcrumb" class="mb-3">
+     <ol class="breadcrumb">
+         <!-- <<< СТРОКА 18: ИЗМЕНЕНИЕ (было href="/rooms/", стало href="{% url 'rooms:room_list' %}") >>> -->
+        <li class="breadcrumb-item"><a href="{% url 'rooms:room_list' %}">Главная</a></li>
+         <li class="breadcrumb-item active" aria-current="page">{{ room.title }}</li>
+     </ol>
+ </nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h1 class="fw-bold mb-1">{{ room.title }}</h1>
+        <span class="text-muted"><i class="bi bi-people me-1"></i> Вместимость: {{ room.capacity }} чел.</span>
+    </div>
+    <div>
+        <span class="fs-2 fw-bold text-success">${{ room.price_per_night }}</span>
+        <span class="text-muted"> / за сутки</span>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-white border-bottom-0 pt-3 px-3">
+                <ul class="nav nav-tabs card-header-tabs" id="roomTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active fw-bold" id="tour-tab" data-bs-toggle="tab" data-bs-target="#tour-pane" type="button">
+                            <i class="bi bi-3d-object me-2"></i>Интерактивный 3D-Тур
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold" id="info-tab" data-bs-toggle="tab" data-bs-target="#info-pane" type="button">
+                            <i class="bi bi-info-circle me-2"></i>Описание и удобства
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card-body p-3 tab-content">
+                <div class="tab-pane fade show active" id="tour-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center p-2 mb-2 bg-light rounded border">
+                        <small class="text-muted">
+                            <i class="bi bi-mouse me-1"></i> Вращайте мышью для обзора 360°, используйте колесо для зума
+                        </small>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="toggleFullScreen()">
+                            <i class="bi bi-arrows-angle-expand me-1"></i> На весь экран
+                        </button>
+                    </div>
+
+                    {% if room.homebyme_embed_url %}
+                        <iframe id="homebymeFrame" class="iframe-3d" src="{{ room.homebyme_embed_url }}" allowfullscreen></iframe>
+                    {% else %}
+                        <div class="text-center py-5 text-muted bg-light rounded d-flex flex-column justify-content-center align-items-center" style="height: 450px;">
+                            <i class="bi bi-camera-video-off fs-1 mb-2"></i>
+                            <p class="mb-0 fw-bold">3D-тур временно недоступен.</p>
+                            <small>Укажите URL в панели администратора.</small>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="tab-pane fade p-3" id="info-pane" role="tabpanel">
+                    <h5 class="fw-bold mb-3">Описание номера</h5>
+                    <p class="text-muted">{{ room.description|linebreaks }}</p>
+                    <hr>
+                    <h5 class="fw-bold mb-3">Удобства номера</h5>
+                    <div class="row g-3 text-secondary">
+                        <div class="col-6 col-md-4"><i class="bi bi-wifi text-primary me-2"></i>Скоростной Wi-Fi</div>
+                        <div class="col-6 col-md-4"><i class="bi bi-snow text-primary me-2"></i>Кондиционер</div>
+                        <div class="col-6 col-md-4"><i class="bi bi-tv text-primary me-2"></i>Smart TV</div>
+                        <div class="col-6 col-md-4"><i class="bi bi-cup-hot text-primary me-2"></i>Завтрак включен</div>
+                        <div class="col-6 col-md-4"><i class="bi bi-shield-check text-primary me-2"></i>Сейф</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+            <div class="card-body p-4">
+                <h4 class="card-title fw-bold mb-3"><i class="bi bi-calendar-check text-primary me-2"></i>Забронировать</h4>
+                <form action="#" method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Дата заезда</label>
+                        <input type="date" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Дата выезда</label>
+                        <input type="date" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Количество гостей</label>
+                        <select class="form-select">
+                            <option value="1">1 гость</option>
+                            <option value="2" selected>2 гостя</option>
+                            <option value="3">3 гостя</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold mt-2">
+                        Оформить бронирование
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleFullScreen() {
+        var iframe = document.getElementById("homebymeFrame");
+        if (!iframe) return;
+        
+        if (!document.fullscreenElement) {
+            if (iframe.requestFullscreen) {
+                iframe.requestFullscreen();
+            } else if (iframe.webkitRequestFullscreen) {
+                iframe.webkitRequestFullscreen();
+            } else if (iframe.msRequestFullscreen) {
+                iframe.msRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    }
+</script>
+{% endblock %}

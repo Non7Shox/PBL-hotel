@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Grand Hotel{% endblock %}</title>
+    <!-- Bootstrap 5 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-light d-flex flex-column min-vh-100">
+
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
+        <div class="container">
+
+            <!-- Логотип отеля -->
+            <a class="navbar-brand fw-bold" href="{% url 'rooms:room_list' %}">
+                <i class="bi bi-building me-2 text-primary"></i>Grand Hotel
+            </a>
+
+            <!-- Кнопка "Гамбургер" для мобильных экранов -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Основное меню навигации -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold" href="{% url 'rooms:room_list' %}">
+                            <i class="bi bi-house me-1"></i>Главная
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold" href="{% url 'rooms:hotel_floors' %}">
+                            <i class="bi bi-layers-half me-1"></i>Схема этажей
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Быстрая яркая кнопка справа -->
+                <div class="d-flex gap-2">
+                    <a href="{% url 'rooms:hotel_floors' %}" class="btn btn-primary btn-sm fw-bold">
+                        <i class="bi bi-map me-1"></i>2D-Проекция
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </nav>
+
+    <!-- Основное содержимое страниц -->
+    <main class="container my-3 flex-grow-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Подвал сайта -->
+    <footer class="bg-dark text-light py-4 mt-auto border-top border-secondary">
+        <div class="container text-center">
+            <p class="mb-0 fw-bold">&copy; 2026 Grand Hotel. 3D-бронирование номеров HomeByMe.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

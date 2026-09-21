@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}2D-Схема этажей — Grand Hotel{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Контейнер интерактивной проекции */
+    .projection-container {
+        background: #0f172a; /* Тёмный инженерный фон */
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        border: 1px solid #1e293b;
+    }
+
+    /* Эффект объёмного наклона проекции */
+    .projection-viewport {
+        perspective: 1200px;
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+    }
+
+    .projection-card {
+        transition: transform 0.5s ease, box-shadow 0.5s ease;
+        transform: perspective(1000px) rotateX(10deg) scale(0.97);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    }
+
+    .projection-viewport:hover .projection-card {
+        transform: perspective(1000px) rotateX(0deg) scale(1);
+    }
+
+    .projection-img {
+        width: 100%;
+        max-width: 750px;
+        margin: 0 auto;
+        display: block;
+        border-radius: 8px;
+    }
+
+    /* Кнопки меток номеров на схеме */
+    .hotspot-btn {
+        transform: translate(-50%, -50%);
+        font-weight: 700;
+        font-size: 0.85rem;
+        padding: 6px 12px;
+        border-radius: 20px;
+        box-shadow: 0 0 12px rgba(13, 110, 253, 0.6);
+        transition: all 0.2s ease-in-out;
+        white-space: nowrap;
+    }
+
+    .hotspot-btn:hover {
+        transform: translate(-50%, -50%) scale(1.15);
+        z-index: 100 !important;
+        box-shadow: 0 0 20px rgba(13, 110, 253, 0.9);
+    }
+
+    /* Стили кнопок переключения этажей */
+    .floor-btn-pill {
+        border-radius: 10px;
+        padding: 8px 16px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-layers-half text-primary me-2"></i>Проекция отеля по этажам</h2>
+        <p class="text-muted mb-0">Выберите этаж слева и нажмите на номер на схеме для перехода к 3D-туру</p>
+    </div>
+</div>
+
+{% if floors %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="projection-container">
+
+            <!-- Панель управления слева сверху: Переключатель этажей -->
+            <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-3 border-bottom border-secondary gap-3">
+
+                <!-- КНОПКИ ПЕРЕКЛЮЧЕНИЯ ЭТАЖЕЙ СЛЕВА -->
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-light me-2 fw-bold"><i class="bi bi-building-gear me-1"></i> Этаж:</span>
+                    <ul class="nav nav-pills" id="floorPills" role="tablist">
+                        {% for f in floors %}
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link floor-btn-pill {% if forloop.first %}active{% endif %}"
+                                        id="pills-floor-tab-{{ f.id }}"
+                                        data-bs-toggle="pill"
+                                        data-bs-target="#pills-floor-{{ f.id }}"
+                                        type="button"
+                                        role="tab">
+                                    {{ f.number }} Этаж
+                                </button>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <small class="text-secondary"><i class="bi bi-mouse me-1"></i> Наведите для выравнивания</small>
+            </div>
+
+            <!-- Содержимое для каждого этажа -->
+            <div class="tab-content" id="floorPillsContent">
+                {% for f in floors %}
+                    <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="pills-floor-{{ f.id }}" role="tabpanel">
+
+                        <div class="projection-viewport">
+                            <div class="projection-card position-relative d-inline-block w-100 text-center">
+
+                                {% if f.plan_image %}
+                                    <img src="{{ f.plan_image.url }}" class="projection-img img-fluid" alt="План {{ f.number }} этажа">
+
+                                    <!-- Кнопки комнат текущего этажа -->
+                                    {% for room in f.rooms.all %}
+                                        <a href="{% url 'rooms:room_detail' room.id %}"
+                                           class="btn btn-primary hotspot-btn position-absolute border border-white"
+                                           style="top: {{ room.y_pos }}%; left: {{ room.x_pos }}%; z-index: 10;"
+                                           data-bs-toggle="tooltip"
+                                           title="{{ room.title }} — ${{ room.price_per_night }}/ночь">
+                                            <i class="bi bi-door-closed-fill me-1"></i>{{ room.title }}
+                                        </a>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="py-5 text-light">
+                                        <i class="bi bi-image-alt fs-1 text-muted"></i>
+                                        <p class="mt-2">Загрузите фото плана для {{ f.number }} этажа в админке.</p>
+                                    </div>
+                                {% endif %}
+
+                            </div>
+                        </div>
+
+                    </div>
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="bi bi-layers fs-1 text-muted"></i>
+    <h4 class="mt-3 text-muted">Этажи пока не созданы</h4>
+    <p class="text-muted">Зайдите в панель администратора и добавьте первый этаж.</p>
+</div>
+{% endif %}
+{% endblock %}
