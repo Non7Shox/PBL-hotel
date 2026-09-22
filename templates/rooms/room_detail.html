@@ -137,7 +137,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container py-4 py-md-5">
+<div class="container py-4 py-md-5" style="padding-top: 7.5rem !important;">
 
  <nav aria-label="breadcrumb" class="mb-4">
      <ol class="breadcrumb room-breadcrumb">
@@ -216,37 +216,73 @@
     </div>
 
     <div class="col-lg-4">
-        <div class="booking-card sticky-top bg-white" style="top: 20px;">
+        <div class="booking-card sticky-top bg-white" style="top: 96px;">
             <div class="booking-head">
                 <h4 class="text-white fw-bold mb-1"><i class="bi bi-calendar-check me-2"></i>Забронировать</h4>
                 <span class="text-white-50 small">Подтверждение — в течение 15 минут</span>
             </div>
             <div class="p-4">
-                <form action="#" method="POST">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label">Дата заезда</label>
-                        <input type="date" class="form-control" required>
+                {% if room.is_bookable %}
+                    {% if is_free_tonight %}
+                        <p class="alert alert-aurelio alert-success small">Свободен сегодня — можно заезжать.</p>
+                    {% else %}
+                        <p class="alert alert-aurelio alert-warning small">Сегодня занят — выберите даты на странице бронирования.</p>
+                    {% endif %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted small">Тариф</span>
+                        <span class="room-price-tag" style="font-size: 1.5rem;">${{ room.price_per_night }}</span>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Дата выезда</label>
-                        <input type="date" class="form-control" required>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label">Количество гостей</label>
-                        <select class="form-select">
-                            <option value="1">1 гость</option>
-                            <option value="2" selected>2 гостя</option>
-                            <option value="3">3 гостя</option>
-                        </select>
-                    </div>
-
-                    <button type="submit" class="btn btn-copper w-100 fw-bold py-2">
+                    <a href="{% url 'bookings:booking_create' room.pk %}" class="btn btn-copper w-100 fw-bold py-2">
                         Оформить бронирование
-                    </button>
+                    </a>
                     <p class="text-center text-muted small mt-3 mb-0"><i class="bi bi-shield-check me-1"></i>Бесплатная отмена за 24 часа</p>
-                </form>
+                {% else %}
+                    <p class="alert alert-aurelio alert-warning mb-0 small">Номер временно снят с продажи. Позвоните на ресепшн: +998 (90) 000-00-00.</p>
+                {% endif %}
             </div>
+        </div>
+
+        <div class="content-card mt-4">
+            <div class="card-header px-4 pt-3">
+                <h5 class="fw-bold mb-1">Отзывы гостей{% if room.reviews_count %} · {{ room.reviews_count }}{% endif %}</h5>
+                {% if room.average_rating %}
+                    <p class="text-muted small mb-0">Средняя оценка: {{ room.average_rating|floatformat:1 }} из 5</p>
+                {% endif %}
+            </div>
+            <div class="card-body p-4">
+                {% if reviews %}
+                    {% for review in reviews %}
+                        <div class="mb-3 pb-3" style="border-bottom: 1px solid var(--gh-line);">
+                            <div class="d-flex justify-content-between gap-2">
+                                <strong>{{ review.user.get_full_name|default:review.user.username }}</strong>
+                                <span class="text-muted small">{{ review.created_at|date:"d.m.Y" }} · {{ review.rating }}/5</span>
+                            </div>
+                            <p class="text-muted mb-0 mt-1">{{ review.comment|linebreaksbr }}</p>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted mb-3">Отзывов пока нет — станьте первым.</p>
+                {% endif %}
+                {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'rooms:add_review' room.pk %}">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label" for="{{ review_form.rating.id_for_label }}">{{ review_form.rating.label }}</label>
+                                {{ review_form.rating }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" for="{{ review_form.comment.id_for_label }}">{{ review_form.comment.label }}</label>
+                                {{ review_form.comment }}
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-copper mt-3">Оставить отзыв</button>
+                    </form>
+                {% else %}
+                    <p class="mb-0"><a href="{% url 'accounts:login' %}?next={% url 'rooms:room_detail' room.pk %}">Войдите</a>, чтобы оставить отзыв.</p>
+                {% endif %}
+            </div>
+        </div>
         </div>
     </div>
 </div>

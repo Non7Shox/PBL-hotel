@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Номера и уборка — Aurelio Hotel{% endblock %}
+
+{% block content %}
+<section class="page-band">
+  <div class="container">
+    <span class="hero-eyebrow">Служба размещения · {{ today|date:"d.m.Y" }}</span>
+    <h1 class="mt-3">Номера и уборка</h1>
+    <p>Кто живёт сейчас, что требует уборки, что снято с продажи.</p>
+  </div>
+</section>
+
+<div class="container pb-5">
+  <div class="table-responsive panel-card">
+    <table class="data-table">
+      <thead><tr><th>Номер</th><th>Этаж</th><th>Статус</th><th>Уборка</th><th></th></tr></thead>
+      <tbody>
+        {% for room in rooms %}
+          <tr>
+            <td><a href="{% url 'rooms:room_detail' room.pk %}">{{ room.display_number }} · {{ room.title }}</a></td>
+            <td>{{ room.floor.title|default:"—" }}</td>
+            <td>
+              {% if room.pk in occupied_ids %}
+                <span class="status-chip status-in">Занят</span>
+              {% elif room.is_bookable %}
+                <span class="status-chip status-confirmed">Свободен</span>
+              {% else %}
+                <span class="status-chip status-cancelled">Не продаётся</span>
+              {% endif %}
+            </td>
+            <td>{{ room.get_housekeeping_display }}</td>
+            <td>
+              <form method="post" action="{% url 'staff:housekeeping_action' room.pk %}" class="d-flex gap-1">
+                {% csrf_token %}
+                <button name="housekeeping" value="clean" class="btn btn-outline-copper btn-sm">Чисто</button>
+                <button name="housekeeping" value="dirty" class="btn btn-outline-copper btn-sm">Убрать</button>
+                <button name="housekeeping" value="inspected" class="btn btn-outline-copper btn-sm">Проверено</button>
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="text-muted">Номеров пока нет.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block title %}Забронировать {{ room.title }} — Aurelio Hotel{% endblock %}
+
+{% block content %}
+<section class="page-band">
+  <div class="container">
+    <span class="hero-eyebrow">Бронирование</span>
+    <h1 class="mt-3">{{ room.title }}</h1>
+    <p>
+      Номер {{ room.display_number }}{% if room.floor %} · {{ room.floor.title }}{% endif %}
+      · {{ room.capacity }} гост. · {{ currency }}{{ room.price_per_night }} за ночь
+    </p>
+  </div>
+</section>
+
+<div class="container pb-5">
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="panel-card">
+        <h4 class="mb-4">Данные брони</h4>
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-aurelio alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <form method="post" id="bookingForm" novalidate
+              data-availability-url="{% url 'bookings:availability_api' %}"
+              data-room="{{ room.pk }}">
+          {% csrf_token %}
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label" for="{{ form.check_in.id_for_label }}">{{ form.check_in.label }}</label>
+              {{ form.check_in }}
+              {% for error in form.check_in.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="{{ form.check_out.id_for_label }}">{{ form.check_out.label }}</label>
+              {{ form.check_out }}
+              {% for error in form.check_out.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="{{ form.guests.id_for_label }}">{{ form.guests.label }}</label>
+              {{ form.guests }}
+              {% for error in form.guests.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-md-8">
+              <label class="form-label" for="{{ form.guest_name.id_for_label }}">{{ form.guest_name.label }}</label>
+              {{ form.guest_name }}
+              {% for error in form.guest_name.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="{{ form.guest_email.id_for_label }}">{{ form.guest_email.label }}</label>
+              {{ form.guest_email }}
+              {% for error in form.guest_email.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="{{ form.guest_phone.id_for_label }}">{{ form.guest_phone.label }}</label>
+              {{ form.guest_phone }}
+              {% for error in form.guest_phone.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="{{ form.special_requests.id_for_label }}">{{ form.special_requests.label }}</label>
+              {{ form.special_requests }}
+            </div>
+          </div>
+
+          <div class="d-flex flex-wrap align-items-center gap-3 mt-4">
+            <button type="submit" class="btn btn-copper px-4">Подтвердить бронь</button>
+            <a href="{% url 'rooms:room_detail' room.pk %}" class="btn btn-outline-copper px-4">Назад к номеру</a>
+          </div>
+          <p class="small text-muted mt-3 mb-0">
+            <i class="bi bi-shield-check me-1"></i>Оплата при заселении. Отмена без штрафа — не позднее чем за 24 часа до заезда.
+          </p>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="panel-card mb-4">
+        <div class="panel-title">Расчёт стоимости</div>
+        <div id="calcBox" class="small">
+          <p class="mb-2">Тариф: <strong>{{ currency }}{{ room.price_per_night }}</strong> за ночь</p>
+          <p class="mb-0 text-muted">Выберите даты — посчитаем итог и проверим занятость.</p>
+        </div>
+        <div id="calcAlert" class="alert alert-aurelio mt-3 mb-0 d-none" role="alert"></div>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-title">Ближайшие заезды в этот номер</div>
+        {% if upcoming %}
+          <ul class="list-unstyled mb-0 d-flex flex-column gap-2 small">
+            {% for item in upcoming %}
+              <li class="d-flex justify-content-between gap-2">
+                <span>{{ item.booked_dates_label }}</span>
+                <span class="status-chip {{ item.status_css }}">{{ item.get_status_display }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+          <p class="small text-muted mb-0 mt-3">Выбирайте даты вне этих интервалов — заявка пройдёт сразу.</p>
+        {% else %}
+          <p class="text-muted mb-0 small">Номер полностью свободен. Отличный выбор!</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    var form = document.getElementById('bookingForm');
+    if (!form) return;
+    var box = document.getElementById('calcBox');
+    var alertBox = document.getElementById('calcAlert');
+    var checkIn = form.querySelector('[name="check_in"]');
+    var checkOut = form.querySelector('[name="check_out"]');
+    var submit = form.querySelector('button[type="submit"]');
+
+    function show(text, isError) {
+      alertBox.textContent = text;
+      alertBox.classList.remove('d-none', 'alert-danger', 'alert-success');
+      alertBox.classList.add(isError ? 'alert-danger' : 'alert-success');
+    }
+
+    function refresh() {
+      if (!checkIn.value || !checkOut.value) return;
+      var url = form.dataset.availabilityUrl + '?room=' + form.dataset.room +
+                '&check_in=' + checkIn.value + '&check_out=' + checkOut.value;
+      fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+          if (!data.ok) { show('Проверьте даты.', true); return; }
+          box.innerHTML = '<p class="mb-2">Ночей: <strong>' + data.nights + '</strong></p>' +
+                          '<p class="mb-2">Итого: <strong class="serif-number fs-4">' +
+                          data.currency + Number(data.total).toFixed(2) + '</strong></p>' +
+                          '<p class="mb-0 text-muted">' + data.message + '</p>';
+          show(data.message, !data.available);
+          if (submit) submit.disabled = !data.available;
+        })
+        .catch(function () { show('Не удалось проверить занятость. Попробуйте ещё раз.', true); });
+    }
+
+    checkIn.addEventListener('change', function () {
+      if (checkOut.value && checkOut.value <= checkIn.value) {
+        var next = new Date(checkIn.value);
+        next.setDate(next.getDate() + 1);
+        checkOut.value = next.toISOString().slice(0, 10);
+      }
+      refresh();
+    });
+    checkOut.addEventListener('change', refresh);
+    refresh();
+  })();
+</script>
+{% endblock %}

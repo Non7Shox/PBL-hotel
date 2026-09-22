@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Бронь на стойке — Aurelio Hotel{% endblock %}
+
+{% block content %}
+<section class="page-band">
+  <div class="container">
+    <span class="hero-eyebrow">Стойка регистрации</span>
+    <h1 class="mt-3">Ручное бронирование</h1>
+    <p>Для звонков и гостей без интернета. Проверка занятости — та же, что на сайте.</p>
+  </div>
+</section>
+
+<div class="container pb-5">
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="panel-card">
+        {% if form.non_field_errors %}
+          <div class="alert alert-aurelio alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% for field in form %}
+            <div class="mb-3">
+              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+          {% endfor %}
+          <button type="submit" class="btn btn-copper w-100">Создать бронь</button>
+        </form>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="panel-card">
+        <div class="panel-title">Последние брони</div>
+        {% if recent %}
+          <ul class="list-unstyled mb-0 small d-flex flex-column gap-2">
+            {% for b in recent %}
+              <li class="d-flex justify-content-between gap-2">
+                <a href="{% url 'bookings:booking_detail' b.code %}">{{ b.code }} · {{ b.room.title }}</a>
+                <span class="status-chip {{ b.status_css }}">{{ b.get_status_display }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}<p class="text-muted mb-0 small">Броней пока нет.</p>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

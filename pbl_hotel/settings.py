@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rooms.apps.RoomsConfig',
-    'bookings.apps.BookingsConfig'
+    'bookings.apps.BookingsConfig',
+    'accounts.apps.AccountsConfig',
+    'staff.apps.StaffConfig',
 ]
 
 MIDDLEWARE = [
@@ -64,6 +66,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'staff.context_processors.staff_status',
             ],
         },
     },
@@ -105,13 +108,21 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tashkent'
 
 USE_I18N = True
 
 USE_TZ = True
+
+
+# Аутентификация гостей и персонала
+# https://docs.djangoproject.com/en/6.1/ref/settings/#auth
+
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'bookings:my_bookings'
+LOGOUT_REDIRECT_URL = 'rooms:room_list'
 
 
 # Static files (CSS, JavaScript, Images)
@@ -128,6 +139,16 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+# Письма пока печатаются в консоль (MAILERS.default = console).
+# Для реальной отправки замените BACKEND на django.core.mail.backends.smtp.EmailBackend
+# и добавьте HOST/PORT/USER/PASSWORD.
+DEFAULT_FROM_EMAIL = 'Aurelio Hotel <no-reply@aureliohotel.uz>'
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# Куда приходят уведомления о новых бронях (почта стойки регистрации)
+HOTEL_NOTIFY_EMAIL = 'reception@aureliohotel.uz'
+HOTEL_CURRENCY = '$'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

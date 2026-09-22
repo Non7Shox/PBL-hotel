@@ -5,253 +5,369 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{% block title %}Aurelio Hotel{% endblock %}</title>
 
-<!-- Bootstrap 5 CSS & Icons -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
-<!-- Шрифты -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
   :root{
-    --gh-ink: #1b1710;
-    --gh-ink-soft: #4a4238;
-    --gh-bg: #faf6ef;
-    --gh-surface: #ffffff;
-    --gh-line: rgba(27,23,16,0.10);
-    --gh-copper: #b5652d;
-    --gh-copper-light: #e0a35e;
-    --gh-copper-dark: #8a4a1e;
-    --gh-muted: #8c8375;
+    --ink: #14120f;
+    --ink-soft: #3d372f;
+    --paper: #f4efe6;
+    --paper-deep: #ebe3d6;
+    --surface: #fffcf7;
+    --line: rgba(20,18,15,0.10);
+    --gold: #c4a36a;
+    --gold-deep: #8d6b32;
+    --muted: #8a8174;
+    --nav-h: 78px;
+    /* старые имена, чтобы внутренние страницы не потеряли цвет */
+    --gh-ink: #14120f;
+    --gh-ink-soft: #3d372f;
+    --gh-bg: #f4efe6;
+    --gh-surface: #fffcf7;
+    --gh-line: rgba(20,18,15,0.10);
+    --gh-copper: #8d6b32;
+    --gh-copper-light: #c4a36a;
+    --gh-copper-dark: #6e5224;
+    --gh-muted: #8a8174;
   }
 
   html{ scroll-behavior: smooth; }
 
   body{
-    font-family: 'Manrope', system-ui, sans-serif;
-    background: var(--gh-bg);
-    color: var(--gh-ink);
+    font-family: 'Outfit', system-ui, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    font-weight: 400;
   }
 
-  h1, h2, h3, h4, .brand-word{
-    font-family: 'Fraunces', 'Playfair Display', serif;
-    letter-spacing: -0.01em;
+  h1, h2, h3, h4, .brand-word, .serif{
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    letter-spacing: 0;
+    font-weight: 600;
   }
 
   a{ text-decoration: none; }
 
-  /* ===== Верхняя утилити-полоса ===== */
-  .util-bar{
-    background: var(--gh-ink);
-    color: rgba(255,255,255,0.65);
-    font-size: 0.78rem;
-    letter-spacing: 0.03em;
-  }
-  .util-bar a{ color: rgba(255,255,255,0.65); }
-  .util-bar a:hover{ color: var(--gh-copper-light); }
-  .util-bar .divider{ opacity: 0.25; }
-
-  /* ===== Навбар ===== */
   .site-navbar{
-    background: rgba(250, 246, 239, 0.85);
-    backdrop-filter: blur(14px) saturate(140%);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
-    border-bottom: 1px solid var(--gh-line);
-    padding-top: 0.65rem;
-    padding-bottom: 0.65rem;
-    transition: box-shadow .2s ease;
+    background: transparent;
+    padding-top: 0.85rem;
+    padding-bottom: 0.85rem;
+    transition: background .25s ease, box-shadow .25s ease, padding .25s ease;
   }
 
-  .site-navbar.shadow-scroll{
-    box-shadow: 0 8px 24px rgba(27,23,16,0.06);
+  .site-navbar.scrolled{
+    background: rgba(20, 18, 15, 0.94);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
   }
 
   .site-navbar .navbar-brand{
     display: flex;
     align-items: center;
-    gap: 0.55rem;
-    font-family: 'Fraunces', serif;
-    font-size: 1.45rem;
-    font-weight: 600;
-    color: var(--gh-ink) !important;
+    gap: 0.7rem;
+    color: #fff !important;
   }
 
   .brand-mark{
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--gh-copper-light), var(--gh-copper));
-    color: #fff;
-    font-size: 1.05rem;
-    box-shadow: 0 6px 16px rgba(181,101,45,0.35);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-size: 0.95rem;
+  }
+
+  .brand-word{
+    font-size: 1.7rem;
+    line-height: 1;
+    letter-spacing: 0.04em;
+  }
+
+  .brand-sub{
+    display: block;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    margin-top: 1px;
   }
 
   .site-navbar .nav-link{
-    color: var(--gh-ink-soft) !important;
-    font-weight: 600;
-    font-size: 0.92rem;
-    letter-spacing: 0.02em;
-    position: relative;
-    padding: 0.55rem 1rem !important;
-  }
-
-  .site-navbar .nav-link::after{
-    content: "";
-    position: absolute;
-    left: 1rem;
-    right: 1rem;
-    bottom: 0.25rem;
-    height: 2px;
-    background: var(--gh-copper);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform .25s ease;
+    color: rgba(255,255,255,0.78) !important;
+    font-weight: 500;
+    font-size: 0.82rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.5rem 0.9rem !important;
   }
 
   .site-navbar .nav-link:hover,
   .site-navbar .nav-link.active{
-    color: var(--gh-ink) !important;
+    color: var(--gold) !important;
   }
 
-  .site-navbar .nav-link:hover::after,
-  .site-navbar .nav-link.active::after{
-    transform: scaleX(1);
-  }
+  .navbar-toggler{ color: #fff; }
+  .navbar-toggler:focus{ box-shadow: none; }
 
-  .btn-copper{
-    background: linear-gradient(135deg, var(--gh-copper-light), var(--gh-copper));
+  .btn-gold{
+    background: var(--gold);
+    border: none;
+    color: var(--ink) !important;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    border-radius: 0;
+    padding: 0.75rem 1.5rem;
+    transition: background .15s ease, transform .15s ease;
+  }
+  .btn-gold:hover{ background: #d6b77c; color: var(--ink) !important; transform: translateY(-1px); }
+
+  .btn-ghost{
+    border: 1px solid rgba(255,255,255,0.55);
+    color: #fff !important;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    border-radius: 0;
+    background: transparent;
+    padding: 0.75rem 1.5rem;
+    transition: background .15s ease, border-color .15s ease;
+  }
+  .btn-ghost:hover{ background: rgba(255,255,255,0.1); border-color: #fff; color: #fff !important; }
+
+  .btn-ink{
+    background: var(--ink);
     border: none;
     color: #fff !important;
-    font-weight: 700;
-    border-radius: 999px;
-    padding: 0.55rem 1.3rem;
-    box-shadow: 0 8px 18px rgba(181,101,45,0.3);
-    transition: transform .15s ease, box-shadow .15s ease;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    border-radius: 0;
+    padding: 0.75rem 1.5rem;
   }
+  .btn-ink:hover{ background: #2a261f; color: #fff !important; }
 
-  .btn-copper:hover{
-    transform: translateY(-2px);
-    box-shadow: 0 12px 24px rgba(181,101,45,0.4);
+  .btn-copper{
+    background: var(--ink);
+    border: none;
     color: #fff !important;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    border-radius: 0;
+    padding: 0.7rem 1.4rem;
+    transition: background .15s ease;
   }
+  .btn-copper:hover{ background: var(--gold-deep); color: #fff !important; }
 
   .btn-outline-copper{
-    border: 1.5px solid var(--gh-copper);
-    color: var(--gh-copper) !important;
-    font-weight: 700;
-    border-radius: 999px;
+    border: 1px solid var(--gold-deep);
+    color: var(--gold-deep) !important;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    border-radius: 0;
     background: transparent;
-    transition: all .15s ease;
   }
+  .btn-outline-copper:hover{ background: var(--gold-deep); color: #fff !important; }
 
-  .btn-outline-copper:hover{
-    background: var(--gh-copper);
-    color: #fff !important;
-  }
-
-  /* Значок-эйброу, используется на обложках и заголовках разделов */
   .hero-eyebrow{
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.25);
-    color: #fff;
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
+    gap: 0.55rem;
+    color: var(--gold);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    padding: 0.45rem 1rem;
-    border-radius: 999px;
-    backdrop-filter: blur(6px);
   }
-
-  /* ===== Подвал ===== */
-  .site-footer{
-    background: var(--gh-ink);
-    color: rgba(255,255,255,0.6);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .site-footer::before{
+  .hero-eyebrow::before{
     content: "";
-    position: absolute;
-    top: -120px;
-    right: -120px;
-    width: 320px;
-    height: 320px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(181,101,45,0.25), transparent 70%);
+    width: 28px;
+    height: 1px;
+    background: var(--gold);
   }
 
-  .footer-cta{
-    background: linear-gradient(135deg, var(--gh-copper-dark), var(--gh-copper));
-    border-radius: 20px;
+  .site-footer{
+    background: var(--ink);
+    color: rgba(255,255,255,0.62);
+    border-top: 1px solid rgba(196,163,106,0.35);
   }
 
   .footer-brand{
     display: flex;
     align-items: center;
-    gap: 0.55rem;
-    font-family: 'Fraunces', serif;
-    font-size: 1.5rem;
-    font-weight: 600;
+    gap: 0.7rem;
     color: #fff;
   }
+  .footer-brand .brand-word{ font-size: 1.8rem; }
 
   .site-footer a{
     color: rgba(255,255,255,0.62);
     transition: color .2s ease;
   }
-
-  .site-footer a:hover{ color: var(--gh-copper-light); }
+  .site-footer a:hover{ color: var(--gold); }
 
   .site-footer h6{
     text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.12em;
-    color: rgba(255,255,255,0.85);
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    color: var(--gold);
+    font-weight: 600;
   }
 
   .site-footer .social-icons a{
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.18);
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(255,255,255,0.16);
+    color: #fff;
   }
-
   .site-footer .social-icons a:hover{
-    background: var(--gh-copper);
-    border-color: var(--gh-copper);
-    color: #fff;
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--ink);
   }
 
-  .site-footer .newsletter-input{
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.15);
+  .site-footer hr{ border-color: rgba(255,255,255,0.1); }
+  .footer-contact li{ margin-bottom: 0.55rem; }
+
+  /* ---------------------------------------------------- общие блоки страниц */
+  .page-band{
+    background: var(--ink);
     color: #fff;
-    border-radius: 999px 0 0 999px;
+    padding: calc(var(--nav-h) + 3rem) 0 3rem;
+    margin-bottom: 2.5rem;
   }
-  .site-footer .newsletter-input::placeholder{ color: rgba(255,255,255,0.4); }
-  .site-footer .newsletter-input:focus{
-    background: rgba(255,255,255,0.09);
-    color: #fff;
-    box-shadow: none;
-    border-color: var(--gh-copper);
+  .page-band h1{ font-size: clamp(2.2rem, 4vw, 3.2rem); margin-bottom: 0.5rem; }
+  .page-band p{ color: rgba(255,255,255,0.6); margin-bottom: 0; }
+
+  .panel-card{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 1.75rem;
+  }
+  .panel-card h2, .panel-card h3, .panel-card h4, .panel-card h5{ color: var(--ink); }
+
+  .panel-title{
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    margin-bottom: 1rem;
   }
 
-  .site-footer hr{
-    border-color: rgba(255,255,255,0.1);
+  .form-label{
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 0.35rem;
   }
+  .form-control, .form-select{
+    border-radius: 0;
+    border: 1px solid var(--line);
+    background: #fff;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.95rem;
+  }
+  .form-control:focus, .form-select:focus{
+    border-color: var(--gold);
+    box-shadow: 0 0 0 0.2rem rgba(196,163,106,0.25);
+  }
+
+  .alert-aurelio{
+    border-radius: 0;
+    border-left: 4px solid var(--gold);
+    background: var(--surface);
+    color: var(--ink);
+  }
+  .alert-aurelio.alert-success{ border-left-color: #1f7a4d; }
+  .alert-aurelio.alert-error,
+  .alert-aurelio.alert-danger{ border-left-color: #b91c1c; }
+  .alert-aurelio.alert-warning{ border-left-color: #b8860b; }
+  .alert-aurelio.alert-info{ border-left-color: #1d4ed8; }
+
+  .status-chip{
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.65rem;
+    border: 1px solid currentColor;
+  }
+  .status-pending{ color: #b8860b; }
+  .status-confirmed{ color: #1f7a4d; }
+  .status-in{ color: #1d4ed8; }
+  .status-out{ color: #6b7280; }
+  .status-cancelled{ color: #b91c1c; }
+  .status-noshow{ color: #7c3aed; }
+
+  .kpi-card{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 1.1rem 1.25rem;
+    height: 100%;
+  }
+  .kpi-card .kpi-value{
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.1rem;
+    line-height: 1;
+    font-weight: 700;
+  }
+  .kpi-card .kpi-label{
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+    margin-top: 0.4rem;
+  }
+
+  .data-table{ width: 100%; border-collapse: collapse; }
+  .data-table th{
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    font-weight: 600;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .data-table td{
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: middle;
+    font-size: 0.92rem;
+  }
+  .data-table tr:last-child td{ border-bottom: none; }
+  .data-table tbody tr:hover{ background: var(--paper); }
+
+  .muted-label{ color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; }
+  .serif-number{ font-family: 'Cormorant Garamond', serif; font-weight: 700; }
 
   {% block extra_style %}{% endblock %}
 </style>
@@ -260,85 +376,91 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
 
-<!-- Утилити-полоса -->
-<div class="util-bar d-none d-md-block">
-  <div class="container py-2 d-flex justify-content-between align-items-center">
-    <div class="d-flex align-items-center gap-3">
-      <span><i class="bi bi-geo-alt me-1"></i>г. Ташкент, ул. Примерная, 1</span>
-      <span class="divider">|</span>
-      <span><i class="bi bi-telephone me-1"></i>+998 (90) 000-00-00</span>
-    </div>
-    <div class="d-flex align-items-center gap-3">
-      <a href="#"><i class="bi bi-instagram"></i></a>
-      <a href="#"><i class="bi bi-telegram"></i></a>
-      <a href="#"><i class="bi bi-facebook"></i></a>
-      <span class="divider">|</span>
-      <span>Ресепшн: 24/7</span>
-    </div>
-  </div>
-</div>
-
-<!-- Навигационная панель -->
-<nav class="navbar navbar-expand-lg site-navbar sticky-top">
+<nav class="navbar navbar-expand-lg site-navbar fixed-top">
   <div class="container">
-    <!-- Логотип отеля -->
     <a class="navbar-brand" href="{% url 'rooms:room_list' %}">
-      <span class="brand-mark"><i class="bi bi-gem"></i></span>
-      <span class="brand-word">Aurelio</span>
+      <span class="brand-mark"><i class="bi bi-diamond"></i></span>
+      <span>
+        <span class="brand-word">Aurelio</span>
+        <span class="brand-sub">Hotel</span>
+      </span>
     </a>
 
-    <!-- Кнопка "Гамбургер" для мобильных экранов -->
-    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
-      <span class="navbar-toggler-icon"></span>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Меню">
+      <i class="bi bi-list fs-2 text-white"></i>
     </button>
 
-    <!-- Основное меню навигации -->
     <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'rooms:room_list' %}">Главная</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'rooms:hotel_floors' %}">Схема этажей</a>
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
+        <li class="nav-item"><a class="nav-link" href="{% url 'rooms:room_list' %}">Главная</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'rooms:room_search' %}">Найти номер</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'rooms:hotel_floors' %}">Схема этажей</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'rooms:room_list' %}#visit">Контакты</a></li>
+
+        {% if user.is_authenticated %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'bookings:my_bookings' %}">Мои брони</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              {{ user.get_full_name|default:user.username }}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" style="border-radius:0;">
+              <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>Личный кабинет</a></li>
+              <li><a class="dropdown-item" href="{% url 'bookings:my_bookings' %}"><i class="bi bi-journal-check me-2"></i>Мои брони</a></li>
+              {% if is_staff_member %}
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'staff:dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Панель персонала</a></li>
+                <li><a class="dropdown-item" href="{% url 'staff:desk_booking' %}"><i class="bi bi-plus-square me-2"></i>Бронь на стойке</a></li>
+              {% endif %}
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <form method="post" action="{% url 'accounts:logout' %}" class="px-3 py-1">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-link p-0 text-decoration-none text-danger">
+                    <i class="bi bi-box-arrow-right me-2"></i>Выйти
+                  </button>
+                </form>
+              </li>
+            </ul>
+          </li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'bookings:booking_lookup' %}">Моя бронь</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Вход</a></li>
+        {% endif %}
+
+        <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+          <a href="{% url 'rooms:room_search' %}" class="btn btn-gold btn-sm">Забронировать</a>
         </li>
       </ul>
-
-      <!-- Кнопка справа -->
-      <div class="d-flex gap-2">
-        <a href="{% url 'rooms:hotel_floors' %}" class="btn btn-copper btn-sm px-3">
-          <i class="bi bi-map me-1"></i>Выбрать номер
-        </a>
-      </div>
     </div>
   </div>
 </nav>
 
-<!-- Основное содержимое страниц -->
 <main class="flex-grow-1">
+  {% if messages %}
+    <div class="container" style="padding-top: calc(var(--nav-h) + 1rem);">
+      {% for message in messages %}
+        <div class="alert alert-dismissible fade show alert-aurelio {% if message.tags %}alert-{{ message.tags }}{% endif %}" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
   {% block content %}{% endblock %}
 </main>
 
-<!-- Подвал сайта -->
 <footer class="site-footer py-5 mt-auto">
-  <div class="container position-relative" style="z-index: 1;">
-
-    <div class="footer-cta p-4 p-md-5 mb-5 d-flex flex-wrap justify-content-between align-items-center gap-3">
-      <div>
-        <h3 class="text-white fw-bold mb-1">Готовы к незабываемому отдыху?</h3>
-        <p class="text-white-50 mb-0">Выберите номер на интерактивной схеме и забронируйте за пару минут.</p>
-      </div>
-      <a href="{% url 'rooms:hotel_floors' %}" class="btn btn-light fw-bold px-4 py-2 rounded-pill flex-shrink-0">
-        Смотреть номера <i class="bi bi-arrow-up-right ms-1"></i>
-      </a>
-    </div>
-
+  <div class="container">
     <div class="row gy-4">
       <div class="col-lg-4">
         <div class="footer-brand mb-3">
-          <span class="brand-mark"><i class="bi bi-gem"></i></span>
-          Aurelio
+          <span class="brand-mark"><i class="bi bi-diamond"></i></span>
+          <span>
+            <span class="brand-word">Aurelio</span>
+            <span class="brand-sub">Hotel</span>
+          </span>
         </div>
-        <p class="mb-4">Изысканный отдых и безупречный сервис. Бронируйте номера онлайн в пару кликов — с наглядной 2D-схемой этажей и 3D-туром по комнатам.</p>
+        <p class="mb-4" style="max-width: 320px;">Тихий городской отель в Ташкенте. Смотрите номер на плане этажа и пройдите 3D-тур ещё до заезда.</p>
         <div class="social-icons d-flex gap-2">
           <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
           <a href="#" aria-label="Telegram"><i class="bi bi-telegram"></i></a>
@@ -346,51 +468,58 @@
         </div>
       </div>
 
-      <div class="col-lg-2 col-md-4 col-6">
-        <h6 class="mb-3">Навигация</h6>
+      <div class="col-lg-2 col-6">
+        <h6 class="mb-3">Отель</h6>
         <ul class="list-unstyled d-flex flex-column gap-2">
           <li><a href="{% url 'rooms:room_list' %}">Главная</a></li>
+          <li><a href="{% url 'rooms:room_list' %}#stay">Номера</a></li>
           <li><a href="{% url 'rooms:hotel_floors' %}">Схема этажей</a></li>
         </ul>
       </div>
 
-      <div class="col-lg-3 col-md-4 col-6">
-        <h6 class="mb-3">Контакты</h6>
-        <ul class="list-unstyled d-flex flex-column gap-2">
-          <li><i class="bi bi-geo-alt me-2"></i>г. Ташкент, ул. Примерная, 1</li>
-          <li><i class="bi bi-telephone me-2"></i>+998 (90) 000-00-00</li>
-          <li><i class="bi bi-envelope me-2"></i>info@aureliohotel.uz</li>
+      <div class="col-lg-3 col-6">
+        <h6 class="mb-3">Ресепшн</h6>
+        <ul class="list-unstyled footer-contact">
+          <li><i class="bi bi-geo-alt me-2" style="color: var(--gold);"></i>Ташкент, ул. Примерная, 1</li>
+          <li><i class="bi bi-telephone me-2" style="color: var(--gold);"></i>+998 (90) 000-00-00</li>
+          <li><i class="bi bi-envelope me-2" style="color: var(--gold);"></i>info@aureliohotel.uz</li>
+          <li><i class="bi bi-clock me-2" style="color: var(--gold);"></i>Заезд с 14:00 · Выезд до 12:00</li>
         </ul>
       </div>
 
-      <div class="col-lg-3 col-md-4">
-        <h6 class="mb-3">Рассылка</h6>
-        <p class="mb-3 small">Специальные предложения и новости отеля на почту.</p>
-        <form class="d-flex" onsubmit="return false;">
-          <input type="email" class="form-control newsletter-input" placeholder="Ваш email">
-          <button class="btn btn-copper rounded-0 rounded-end px-3" type="submit"><i class="bi bi-send"></i></button>
-        </form>
+      <div class="col-lg-3">
+        <h6 class="mb-3">На карте</h6>
+        <div style="border: 1px solid rgba(255,255,255,0.12); height: 140px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.4); letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.72rem;">
+          <span><i class="bi bi-pin-map me-2"></i>Ташкент</span>
+        </div>
       </div>
     </div>
 
     <hr class="my-4">
 
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 small">
-      <p class="mb-0">&copy; 2026 Aurelio Hotel. Бронирование номеров с 3D-туром.</p>
-      <p class="mb-0">Сделано с <i class="bi bi-heart-fill text-danger"></i> для гостей</p>
+      <p class="mb-0">&copy; 2026 Aurelio Hotel</p>
+      <p class="mb-0" style="letter-spacing: 0.14em; text-transform: uppercase; font-size: 0.7rem;">2D-схема · 3D-тур · Онлайн-бронь</p>
     </div>
   </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // Тень у навбара при прокрутке
-  window.addEventListener('scroll', function(){
+  (function () {
     var nav = document.querySelector('.site-navbar');
     if (!nav) return;
-    if (window.scrollY > 8){ nav.classList.add('shadow-scroll'); }
-    else { nav.classList.remove('shadow-scroll'); }
-  });
+    var hero = document.querySelector('.home-hero');
+    function sync() {
+      if (!hero) {
+        nav.classList.add('scrolled');
+        return;
+      }
+      nav.classList.toggle('scrolled', window.scrollY > 40);
+    }
+    sync();
+    window.addEventListener('scroll', sync, { passive: true });
+  })();
 </script>
 {% block extra_js %}{% endblock %}
 </body>

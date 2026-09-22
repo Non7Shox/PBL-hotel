@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Вход — Aurelio Hotel{% endblock %}
+
+{% block content %}
+<section class="page-band">
+  <div class="container">
+    <span class="hero-eyebrow">Гостям и персоналу</span>
+    <h1 class="mt-3">Вход в аккаунт</h1>
+    <p>Гости видят свои брони, персонал — рабочую панель.</p>
+  </div>
+</section>
+
+<div class="container pb-5">
+  <div class="row g-4 justify-content-center">
+    <div class="col-lg-5">
+      <div class="panel-card">
+        {% if form.non_field_errors %}
+          <div class="alert alert-aurelio alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% for field in form %}
+            <div class="mb-3">
+              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+          {% endfor %}
+          <button type="submit" class="btn btn-copper w-100">Войти</button>
+        </form>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="panel-card">
+        <div class="panel-title">Нет аккаунта?</div>
+        <p class="small text-muted">Регистрация займёт минуту. Брони можно искать и без аккаунта — по коду из письма.</p>
+        <a href="{% url 'accounts:signup' %}" class="btn btn-outline-copper w-100 mb-2">Создать аккаунт</a>
+        <a href="{% url 'bookings:booking_lookup' %}" class="btn btn-outline-copper w-100">Найти бронь по коду</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Найти номер — Aurelio Hotel{% endblock %}
+
+{% block content %}
+<section class="page-band">
+  <div class="container">
+    <span class="hero-eyebrow">Подбор номера</span>
+    <h1 class="mt-3">Найти свободный номер</h1>
+    <p>Выберите даты и число гостей — покажем, что свободно, и посчитаем итог за весь срок.</p>
+  </div>
+</section>
+
+<div class="container pb-5">
+  <div class="panel-card mb-4">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label" for="{{ form.check_in.id_for_label }}">{{ form.check_in.label }}</label>
+        {{ form.check_in }}
+        {% for error in form.check_in.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="{{ form.check_out.id_for_label }}">{{ form.check_out.label }}</label>
+        {{ form.check_out }}
+        {% for error in form.check_out.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="{{ form.guests.id_for_label }}">{{ form.guests.label }}</label>
+        {{ form.guests }}
+        {% for error in form.guests.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="{{ form.floor.id_for_label }}">{{ form.floor.label }}</label>
+        {{ form.floor }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="{{ form.max_price.id_for_label }}">{{ form.max_price.label }}</label>
+        {{ form.max_price }}
+      </div>
+      <div class="col-12 d-flex flex-wrap gap-3">
+        <button type="submit" class="btn btn-copper px-4">Показать номера</button>
+        <a href="{% url 'rooms:hotel_floors' %}" class="btn btn-outline-copper px-4">Схема этажей</a>
+      </div>
+    </form>
+  </div>
+
+  {% if searched %}
+    <div class="d-flex flex-wrap gap-3 mb-4">
+      <div class="kpi-card flex-fill"><div class="kpi-value">{{ free_rooms|length }}</div><div class="kpi-label">Свободно</div></div>
+      <div class="kpi-card flex-fill"><div class="kpi-value">{{ busy_count }}</div><div class="kpi-label">Занято</div></div>
+      <div class="kpi-card flex-fill"><div class="kpi-value">{{ nights }}</div><div class="kpi-label">Ночей</div></div>
+    </div>
+
+    {% if results %}
+      <div class="row g-4">
+        {% for room in results %}
+          <div class="col-md-6 col-lg-4">
+            <div class="panel-card h-100 d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                <h5 class="mb-0">{{ room.title }}</h5>
+                {% if room.is_free %}
+                  <span class="status-chip status-confirmed">Свободен</span>
+                {% else %}
+                  <span class="status-chip status-cancelled">Занят</span>
+                {% endif %}
+              </div>
+              <p class="text-muted small mb-2">Номер {{ room.display_number }}{% if room.floor %} · {{ room.floor.title }}{% endif %} · до {{ room.capacity }} гост.</p>
+              <p class="mb-3"><span class="serif-number fs-4">${{ room.stay_total }}</span> <span class="text-muted small">за {{ room.stay_nights }} н.</span></p>
+              <div class="mt-auto d-flex gap-2">
+                <a href="{% url 'rooms:room_detail' room.pk %}" class="btn btn-outline-copper btn-sm flex-fill">Открыть</a>
+                {% if room.is_free %}
+                  <a href="{% url 'bookings:booking_create' room.pk %}" class="btn btn-copper btn-sm flex-fill">Забронировать</a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="panel-card"><p class="mb-0 text-muted">Ничего не найдено. Попробуйте другие даты или уберите лимит цены.</p></div>
+    {% endif %}
+  {% else %}
+    <div class="panel-card"><p class="mb-0 text-muted">Заполните даты выше и нажмите «Показать номера».</p></div>
+  {% endif %}
+</div>
+{% endblock %}

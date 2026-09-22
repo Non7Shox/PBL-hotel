@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Бронь {{ booking.code }} — Aurelio Hotel{% endblock %}
+
+{% block content %}
+<section class="page-band">
+  <div class="container">
+    <span class="hero-eyebrow">Публичная бронь</span>
+    <h1 class="mt-3">{{ booking.room.title }}</h1>
+    <p>
+      <span class="status-chip {{ booking.status_css }}">{{ booking.get_status_display }}</span>
+      <span class="ms-2 muted-label">Код брони: {{ booking.code }}</span>
+    </p>
+  </div>
+</section>
+
+<div class="container pb-5">
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="panel-card mb-4">
+        <div class="panel-title">Основное</div>
+        <table class="data-table">
+          <tbody>
+            <tr><th>Номер</th><td>{{ booking.room.title }} · {{ booking.room.display_number }}{% if booking.room.floor %} · {{ booking.room.floor.title }}{% endif %}</td></tr>
+            <tr><th>Даты</th><td>{{ booking.check_in|date:"d.m.Y" }} → {{ booking.check_out|date:"d.m.Y" }} ({{ booking.nights }} н.)</td></tr>
+            <tr><th>Гостей</th><td>{{ booking.guests }}</td></tr>
+            <tr><th>Итого</th><td><span class="serif-number fs-4">{{ currency }}{{ booking.total_price }}</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-title">Вы можете попросить</div>
+        <ul class="list-unstyled small mb-0 d-flex flex-column gap-2">
+          <li><i class="bi bi-telephone me-2" style="color: var(--gold);"></i>+998 (90) 000-00-00</li>
+          <li><i class="bi bi-envelope me-2" style="color: var(--gold);"></i>info@aureliohotel.uz</li>
+          <li><i class="bi bi-whatsapp me-2" style="color: var(--gold);"></i>Yahoo Chats</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      {% if booking.room.homebyme_embed_url %}
+        <div class="panel-card">
+          <div class="panel-title">Окружение номера</div>
+          <a href="{% url 'rooms:room_detail' booking.room.pk %}" class="btn btn-copper w-100">Посмотреть 3D-тур</a>
+        </div>
+      {% else %}
+        <div class="panel-card">
+          <div class="panel-title">Стоимость</div>
+          <p class="small mb-0">{{ currency }}{{ booking.total_price }} за {{ booking.nights }} ночей</p>
+        </div>
+      {% endif %}
+
+      <div class="panel-card">
+        <div class="panel-title">Действия</div>
+        <a href="mailto:info@aureliohotel.uz?subject=Бронь {{ booking.code }}"
+           class="btn btn-outline-copper w-100 mb-2">Написать в поддержку</a>
+        <a href="tel:+998900000000" class="btn btn-outline-copper w-100">Позвонить</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

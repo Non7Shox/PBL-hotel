@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Регистрация — Aurelio Hotel{% endblock %}
+
+{% block content %}
+<section class="page-band">
+  <div class="container">
+    <span class="hero-eyebrow">Новый гость</span>
+    <h1 class="mt-3">Создать аккаунт</h1>
+    <p>Аккаунт запоминает ваши брони и ускоряет следующее оформление.</p>
+  </div>
+</section>
+
+<div class="container pb-5">
+  <div class="row g-4 justify-content-center">
+    <div class="col-lg-6">
+      <div class="panel-card">
+        {% if form.non_field_errors %}
+          <div class="alert alert-aurelio alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% for field in form %}
+            <div class="mb-3">
+              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+              {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+          {% endfor %}
+          <button type="submit" class="btn btn-copper w-100">Зарегистрироваться</button>
+        </form>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="panel-card">
+        <div class="panel-title">Уже с нами?</div>
+        <p class="small text-muted">Войдите, чтобы увидеть свои брони и данные профиля.</p>
+        <a href="{% url 'accounts:login' %}" class="btn btn-outline-copper w-100">Войти</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
