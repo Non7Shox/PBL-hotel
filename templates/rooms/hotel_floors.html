@@ -1,31 +1,68 @@
 {% extends 'base.html' %}
 
-{% block title %}2D-Схема этажей — Grand Hotel{% endblock %}
+{% block title %}2D-Схема этажей — Aurelio Hotel{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* Главный контейнер, фиксированный под ширину 750px */
+    /* ===== Заголовок страницы ===== */
+    .page-header-band{
+        background: linear-gradient(135deg, var(--gh-ink) 0%, #2a2318 100%);
+        position: relative;
+        overflow: hidden;
+        border-radius: 0 0 32px 32px;
+    }
+
+    .page-header-band::before{
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 85% 0%, rgba(181,101,45,0.30), transparent 55%);
+    }
+
+    .page-header-band h2{ color: #fff; }
+    .page-header-band p{ color: rgba(255,255,255,0.65); }
+
+    /* Главный контейнер проекции */
     .projection-container {
-        background: #0f172a;
+        background: #0f0d0a;
+        border-radius: 22px;
+        padding: 22px;
+        box-shadow: 0 25px 55px rgba(27,23,16,0.35);
+        border: 1px solid rgba(255,255,255,0.06);
+        max-width: 820px;
+        margin: -70px auto 0;
+        position: relative;
+        z-index: 3;
+    }
+
+    /* Панель переключателя этажей */
+    .floor-switcher{
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
         border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-        border: 1px solid #1e293b;
-        max-width: 790px; /* 750px картинка + внутренние отступы */
-        margin: 0 auto;
+        padding: 0.9rem 1.1rem;
+    }
+
+    .floor-switcher .switcher-label{
+        color: rgba(255,255,255,0.55);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 700;
     }
 
     /* Рамка строго под размер изображения */
     .projection-viewport {
         position: relative;
-        border-radius: 12px;
+        border-radius: 14px;
         overflow: hidden;
-        background: #020617;
+        background: #000;
         padding: 10px;
-        border: 1px solid #1e293b;
+        border: 1px solid rgba(255,255,255,0.06);
         display: flex;
         justify-content: center;
         align-items: center;
+        margin-top: 1rem;
     }
 
     .projection-card {
@@ -35,15 +72,13 @@
         text-align: center;
     }
 
-    /* Картинка в исходном размере 750px с повышенной чёткостью */
     .projection-img {
         width: 100%;
         max-width: 750px;
         height: auto;
         display: block;
         margin: 0 auto;
-        border-radius: 8px;
-        /* Увеличение четкости линий схемы */
+        border-radius: 10px;
         image-rendering: -webkit-optimize-contrast;
         filter: contrast(105%) brightness(102%);
     }
@@ -52,10 +87,13 @@
     .hotspot-btn {
         transform: translate(-50%, -50%);
         font-weight: 700;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         padding: 6px 14px;
-        border-radius: 20px;
-        box-shadow: 0 0 12px rgba(13, 110, 253, 0.6);
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--gh-copper-light), var(--gh-copper));
+        border: 2px solid rgba(255,255,255,0.9);
+        color: #fff;
+        box-shadow: 0 0 0 4px rgba(181,101,45,0.25), 0 6px 16px rgba(0,0,0,0.4);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         white-space: nowrap;
     }
@@ -63,50 +101,78 @@
     .hotspot-btn:hover {
         transform: translate(-50%, -50%) scale(1.15);
         z-index: 100 !important;
-        box-shadow: 0 0 20px rgba(13, 110, 253, 0.9);
+        box-shadow: 0 0 0 6px rgba(181,101,45,0.35), 0 10px 22px rgba(0,0,0,0.5);
+        color: #fff;
     }
 
-    /* Стили кнопок переключения этажей */
+    /* Пилюли переключения этажей */
     .floor-btn-pill {
-        border-radius: 10px;
-        padding: 8px 16px;
-        font-weight: 600;
+        border-radius: 999px !important;
+        padding: 8px 18px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.65) !important;
+        border: 1px solid rgba(255,255,255,0.1);
+        margin: 0 4px 4px 0;
+        transition: all .2s ease;
+    }
+
+    .floor-btn-pill:hover{
+        color: #fff !important;
+        border-color: rgba(255,255,255,0.3);
+    }
+
+    .nav-pills .floor-btn-pill.active{
+        background: linear-gradient(135deg, var(--gh-copper-light), var(--gh-copper)) !important;
+        color: #fff !important;
+        border-color: transparent;
+        box-shadow: 0 6px 16px rgba(181,101,45,0.35);
+    }
+
+    .legend-hint{
+        background: rgba(255,255,255,0.05);
+        border: 1px dashed rgba(255,255,255,0.15);
+        border-radius: 12px;
+        color: rgba(255,255,255,0.55);
+        font-size: 0.85rem;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="fw-bold mb-1"><i class="bi bi-layers-half text-primary me-2"></i>Проекция отеля по этажам</h2>
-        <p class="text-muted mb-0">Выберите этаж слева и нажмите на номер на схеме для перехода к 3D-туру</p>
+
+<!-- Заголовок раздела -->
+<div class="page-header-band py-5 mb-0">
+    <div class="container position-relative" style="z-index: 1;">
+        <span class="hero-eyebrow mb-3" style="display:inline-flex;"><i class="bi bi-layers-half"></i> Интерактивная навигация</span>
+        <h2 class="fw-bold mt-3 mb-2">Проекция отеля по этажам</h2>
+        <p class="mb-0 pb-4">Выберите этаж и нажмите на номер на схеме, чтобы открыть карточку с 3D-туром.</p>
     </div>
 </div>
 
 {% if floors %}
+<div class="container">
 <div class="row justify-content-center">
     <div class="col-12">
         <div class="projection-container">
 
             <!-- Панель управления: Переключатель этажей -->
-            <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 pb-3 border-bottom border-secondary gap-3">
-                <div class="d-flex align-items-center gap-2">
-                    <span class="text-light me-2 fw-bold"><i class="bi bi-building-gear me-1"></i> Этаж:</span>
-                    <ul class="nav nav-pills" id="floorPills" role="tablist">
-                        {% for f in floors %}
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link floor-btn-pill {% if forloop.first %}active{% endif %}"
-                                        id="pills-floor-tab-{{ f.id }}"
-                                        data-bs-toggle="pill"
-                                        data-bs-target="#pills-floor-{{ f.id }}"
-                                        type="button"
-                                        role="tab">
-                                    {{ f.number }} Этаж
-                                </button>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
+            <div class="floor-switcher d-flex flex-wrap align-items-center gap-3 mb-1">
+                <span class="switcher-label"><i class="bi bi-building-gear me-1"></i>Этаж</span>
+                <ul class="nav nav-pills flex-wrap" id="floorPills" role="tablist">
+                    {% for f in floors %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link floor-btn-pill {% if forloop.first %}active{% endif %}"
+                                    id="pills-floor-tab-{{ f.id }}"
+                                    data-bs-toggle="pill"
+                                    data-bs-target="#pills-floor-{{ f.id }}"
+                                    type="button"
+                                    role="tab">
+                                {{ f.number }} этаж
+                            </button>
+                        </li>
+                    {% endfor %}
+                </ul>
             </div>
 
             <!-- Содержимое этажа -->
@@ -123,7 +189,7 @@
                                     <!-- Кнопки комнат -->
                                     {% for room in f.rooms.all %}
                                         <a href="{% url 'rooms:room_detail' room.id %}"
-                                           class="btn btn-primary hotspot-btn position-absolute border border-white"
+                                           class="hotspot-btn position-absolute"
                                            style="top: {{ room.y_pos }}%; left: {{ room.x_pos }}%; z-index: 10;"
                                            data-bs-toggle="tooltip"
                                            title="{{ room.title }} — ${{ room.price_per_night }}/ночь">
@@ -133,11 +199,15 @@
                                 {% else %}
                                     <div class="py-5 text-light text-center">
                                         <i class="bi bi-image-alt fs-1 text-muted"></i>
-                                        <p class="mt-2">Загрузите фото плана для {{ f.number }} этажа в админке.</p>
+                                        <p class="mt-2 mb-0">Загрузите фото плана для {{ f.number }} этажа в админке.</p>
                                     </div>
                                 {% endif %}
 
                             </div>
+                        </div>
+
+                        <div class="legend-hint mt-3 p-2 px-3 d-inline-flex align-items-center gap-2">
+                            <i class="bi bi-cursor"></i> Нажмите на метку номера, чтобы открыть карточку и 3D-тур
                         </div>
 
                     </div>
@@ -146,6 +216,7 @@
 
         </div>
     </div>
+</div>
 </div>
 {% else %}
 <div class="text-center py-5">

@@ -1,69 +1,397 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Grand Hotel{% endblock %}</title>
-    <!-- Bootstrap 5 CSS & Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    {% block extra_css %}{% endblock %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Aurelio Hotel{% endblock %}</title>
+
+<!-- Bootstrap 5 CSS & Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+<!-- Шрифты -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --gh-ink: #1b1710;
+    --gh-ink-soft: #4a4238;
+    --gh-bg: #faf6ef;
+    --gh-surface: #ffffff;
+    --gh-line: rgba(27,23,16,0.10);
+    --gh-copper: #b5652d;
+    --gh-copper-light: #e0a35e;
+    --gh-copper-dark: #8a4a1e;
+    --gh-muted: #8c8375;
+  }
+
+  html{ scroll-behavior: smooth; }
+
+  body{
+    font-family: 'Manrope', system-ui, sans-serif;
+    background: var(--gh-bg);
+    color: var(--gh-ink);
+  }
+
+  h1, h2, h3, h4, .brand-word{
+    font-family: 'Fraunces', 'Playfair Display', serif;
+    letter-spacing: -0.01em;
+  }
+
+  a{ text-decoration: none; }
+
+  /* ===== Верхняя утилити-полоса ===== */
+  .util-bar{
+    background: var(--gh-ink);
+    color: rgba(255,255,255,0.65);
+    font-size: 0.78rem;
+    letter-spacing: 0.03em;
+  }
+  .util-bar a{ color: rgba(255,255,255,0.65); }
+  .util-bar a:hover{ color: var(--gh-copper-light); }
+  .util-bar .divider{ opacity: 0.25; }
+
+  /* ===== Навбар ===== */
+  .site-navbar{
+    background: rgba(250, 246, 239, 0.85);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border-bottom: 1px solid var(--gh-line);
+    padding-top: 0.65rem;
+    padding-bottom: 0.65rem;
+    transition: box-shadow .2s ease;
+  }
+
+  .site-navbar.shadow-scroll{
+    box-shadow: 0 8px 24px rgba(27,23,16,0.06);
+  }
+
+  .site-navbar .navbar-brand{
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-family: 'Fraunces', serif;
+    font-size: 1.45rem;
+    font-weight: 600;
+    color: var(--gh-ink) !important;
+  }
+
+  .brand-mark{
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--gh-copper-light), var(--gh-copper));
+    color: #fff;
+    font-size: 1.05rem;
+    box-shadow: 0 6px 16px rgba(181,101,45,0.35);
+  }
+
+  .site-navbar .nav-link{
+    color: var(--gh-ink-soft) !important;
+    font-weight: 600;
+    font-size: 0.92rem;
+    letter-spacing: 0.02em;
+    position: relative;
+    padding: 0.55rem 1rem !important;
+  }
+
+  .site-navbar .nav-link::after{
+    content: "";
+    position: absolute;
+    left: 1rem;
+    right: 1rem;
+    bottom: 0.25rem;
+    height: 2px;
+    background: var(--gh-copper);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .25s ease;
+  }
+
+  .site-navbar .nav-link:hover,
+  .site-navbar .nav-link.active{
+    color: var(--gh-ink) !important;
+  }
+
+  .site-navbar .nav-link:hover::after,
+  .site-navbar .nav-link.active::after{
+    transform: scaleX(1);
+  }
+
+  .btn-copper{
+    background: linear-gradient(135deg, var(--gh-copper-light), var(--gh-copper));
+    border: none;
+    color: #fff !important;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 0.55rem 1.3rem;
+    box-shadow: 0 8px 18px rgba(181,101,45,0.3);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+
+  .btn-copper:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(181,101,45,0.4);
+    color: #fff !important;
+  }
+
+  .btn-outline-copper{
+    border: 1.5px solid var(--gh-copper);
+    color: var(--gh-copper) !important;
+    font-weight: 700;
+    border-radius: 999px;
+    background: transparent;
+    transition: all .15s ease;
+  }
+
+  .btn-outline-copper:hover{
+    background: var(--gh-copper);
+    color: #fff !important;
+  }
+
+  /* Значок-эйброу, используется на обложках и заголовках разделов */
+  .hero-eyebrow{
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    backdrop-filter: blur(6px);
+  }
+
+  /* ===== Подвал ===== */
+  .site-footer{
+    background: var(--gh-ink);
+    color: rgba(255,255,255,0.6);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .site-footer::before{
+    content: "";
+    position: absolute;
+    top: -120px;
+    right: -120px;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(181,101,45,0.25), transparent 70%);
+  }
+
+  .footer-cta{
+    background: linear-gradient(135deg, var(--gh-copper-dark), var(--gh-copper));
+    border-radius: 20px;
+  }
+
+  .footer-brand{
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-family: 'Fraunces', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .site-footer a{
+    color: rgba(255,255,255,0.62);
+    transition: color .2s ease;
+  }
+
+  .site-footer a:hover{ color: var(--gh-copper-light); }
+
+  .site-footer h6{
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.85);
+  }
+
+  .site-footer .social-icons a{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.18);
+  }
+
+  .site-footer .social-icons a:hover{
+    background: var(--gh-copper);
+    border-color: var(--gh-copper);
+    color: #fff;
+  }
+
+  .site-footer .newsletter-input{
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    border-radius: 999px 0 0 999px;
+  }
+  .site-footer .newsletter-input::placeholder{ color: rgba(255,255,255,0.4); }
+  .site-footer .newsletter-input:focus{
+    background: rgba(255,255,255,0.09);
+    color: #fff;
+    box-shadow: none;
+    border-color: var(--gh-copper);
+  }
+
+  .site-footer hr{
+    border-color: rgba(255,255,255,0.1);
+  }
+
+  {% block extra_style %}{% endblock %}
+</style>
+
+{% block extra_css %}{% endblock %}
 </head>
-<body class="bg-light d-flex flex-column min-vh-100">
+<body class="d-flex flex-column min-vh-100">
 
-    <!-- Навигационная панель -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
-        <div class="container">
+<!-- Утилити-полоса -->
+<div class="util-bar d-none d-md-block">
+  <div class="container py-2 d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-3">
+      <span><i class="bi bi-geo-alt me-1"></i>г. Ташкент, ул. Примерная, 1</span>
+      <span class="divider">|</span>
+      <span><i class="bi bi-telephone me-1"></i>+998 (90) 000-00-00</span>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      <a href="#"><i class="bi bi-instagram"></i></a>
+      <a href="#"><i class="bi bi-telegram"></i></a>
+      <a href="#"><i class="bi bi-facebook"></i></a>
+      <span class="divider">|</span>
+      <span>Ресепшн: 24/7</span>
+    </div>
+  </div>
+</div>
 
-            <!-- Логотип отеля -->
-            <a class="navbar-brand fw-bold" href="{% url 'rooms:room_list' %}">
-                <i class="bi bi-building me-2 text-primary"></i>Grand Hotel
-            </a>
+<!-- Навигационная панель -->
+<nav class="navbar navbar-expand-lg site-navbar sticky-top">
+  <div class="container">
+    <!-- Логотип отеля -->
+    <a class="navbar-brand" href="{% url 'rooms:room_list' %}">
+      <span class="brand-mark"><i class="bi bi-gem"></i></span>
+      <span class="brand-word">Aurelio</span>
+    </a>
 
-            <!-- Кнопка "Гамбургер" для мобильных экранов -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+    <!-- Кнопка "Гамбургер" для мобильных экранов -->
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-            <!-- Основное меню навигации -->
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold" href="{% url 'rooms:room_list' %}">
-                            <i class="bi bi-house me-1"></i>Главная
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold" href="{% url 'rooms:hotel_floors' %}">
-                            <i class="bi bi-layers-half me-1"></i>Схема этажей
-                        </a>
-                    </li>
-                </ul>
+    <!-- Основное меню навигации -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'rooms:room_list' %}">Главная</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'rooms:hotel_floors' %}">Схема этажей</a>
+        </li>
+      </ul>
 
-                <!-- Быстрая яркая кнопка справа -->
-                <div class="d-flex gap-2">
-                    <a href="{% url 'rooms:hotel_floors' %}" class="btn btn-primary btn-sm fw-bold">
-                        <i class="bi bi-map me-1"></i>2D-Проекция
-                    </a>
-                </div>
-            </div>
+      <!-- Кнопка справа -->
+      <div class="d-flex gap-2">
+        <a href="{% url 'rooms:hotel_floors' %}" class="btn btn-copper btn-sm px-3">
+          <i class="bi bi-map me-1"></i>Выбрать номер
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
 
+<!-- Основное содержимое страниц -->
+<main class="flex-grow-1">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- Подвал сайта -->
+<footer class="site-footer py-5 mt-auto">
+  <div class="container position-relative" style="z-index: 1;">
+
+    <div class="footer-cta p-4 p-md-5 mb-5 d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div>
+        <h3 class="text-white fw-bold mb-1">Готовы к незабываемому отдыху?</h3>
+        <p class="text-white-50 mb-0">Выберите номер на интерактивной схеме и забронируйте за пару минут.</p>
+      </div>
+      <a href="{% url 'rooms:hotel_floors' %}" class="btn btn-light fw-bold px-4 py-2 rounded-pill flex-shrink-0">
+        Смотреть номера <i class="bi bi-arrow-up-right ms-1"></i>
+      </a>
+    </div>
+
+    <div class="row gy-4">
+      <div class="col-lg-4">
+        <div class="footer-brand mb-3">
+          <span class="brand-mark"><i class="bi bi-gem"></i></span>
+          Aurelio
         </div>
-    </nav>
-
-    <!-- Основное содержимое страниц -->
-    <main class="container my-3 flex-grow-1">
-        {% block content %}{% endblock %}
-    </main>
-
-    <!-- Подвал сайта -->
-    <footer class="bg-dark text-light py-4 mt-auto border-top border-secondary">
-        <div class="container text-center">
-            <p class="mb-0 fw-bold">&copy; 2026 Grand Hotel. 3D-бронирование номеров HomeByMe.</p>
+        <p class="mb-4">Изысканный отдых и безупречный сервис. Бронируйте номера онлайн в пару кликов — с наглядной 2D-схемой этажей и 3D-туром по комнатам.</p>
+        <div class="social-icons d-flex gap-2">
+          <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+          <a href="#" aria-label="Telegram"><i class="bi bi-telegram"></i></a>
+          <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
         </div>
-    </footer>
+      </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    {% block extra_js %}{% endblock %}
+      <div class="col-lg-2 col-md-4 col-6">
+        <h6 class="mb-3">Навигация</h6>
+        <ul class="list-unstyled d-flex flex-column gap-2">
+          <li><a href="{% url 'rooms:room_list' %}">Главная</a></li>
+          <li><a href="{% url 'rooms:hotel_floors' %}">Схема этажей</a></li>
+        </ul>
+      </div>
+
+      <div class="col-lg-3 col-md-4 col-6">
+        <h6 class="mb-3">Контакты</h6>
+        <ul class="list-unstyled d-flex flex-column gap-2">
+          <li><i class="bi bi-geo-alt me-2"></i>г. Ташкент, ул. Примерная, 1</li>
+          <li><i class="bi bi-telephone me-2"></i>+998 (90) 000-00-00</li>
+          <li><i class="bi bi-envelope me-2"></i>info@aureliohotel.uz</li>
+        </ul>
+      </div>
+
+      <div class="col-lg-3 col-md-4">
+        <h6 class="mb-3">Рассылка</h6>
+        <p class="mb-3 small">Специальные предложения и новости отеля на почту.</p>
+        <form class="d-flex" onsubmit="return false;">
+          <input type="email" class="form-control newsletter-input" placeholder="Ваш email">
+          <button class="btn btn-copper rounded-0 rounded-end px-3" type="submit"><i class="bi bi-send"></i></button>
+        </form>
+      </div>
+    </div>
+
+    <hr class="my-4">
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 small">
+      <p class="mb-0">&copy; 2026 Aurelio Hotel. Бронирование номеров с 3D-туром.</p>
+      <p class="mb-0">Сделано с <i class="bi bi-heart-fill text-danger"></i> для гостей</p>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Тень у навбара при прокрутке
+  window.addEventListener('scroll', function(){
+    var nav = document.querySelector('.site-navbar');
+    if (!nav) return;
+    if (window.scrollY > 8){ nav.classList.add('shadow-scroll'); }
+    else { nav.classList.remove('shadow-scroll'); }
+  });
+</script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -1,60 +1,249 @@
 {% extends 'base.html' %}
 
-{% block title %}Добро пожаловать — Grand Hotel{% endblock %}
+{% block title %}Добро пожаловать — Aurelio Hotel{% endblock %}
+
+{% block extra_style %}
+  /* ===== Обложка / Hero ===== */
+  .hero-cover{
+    position: relative;
+    margin-top: -1px;
+    min-height: 640px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background:
+      linear-gradient(180deg, rgba(27,23,16,0.55) 0%, rgba(27,23,16,0.78) 60%, var(--gh-bg) 100%),
+      url('https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1900&q=80') center/cover no-repeat;
+  }
+
+  .hero-cover::before{
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 15% 20%, rgba(181,101,45,0.35), transparent 45%);
+  }
+
+  .hero-cover h1{
+    color: #fff;
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    line-height: 1.08;
+    text-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  }
+
+  .hero-cover .lead{
+    color: rgba(255,255,255,0.85);
+    max-width: 560px;
+  }
+
+  .hero-rating{
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: rgba(255,255,255,0.9);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  /* Плавающая карточка статистики, наезжающая на низ обложки */
+  .stats-float{
+    position: relative;
+    z-index: 3;
+    margin-top: -86px;
+  }
+
+  .stat-tile{
+    background: var(--gh-surface);
+    border: 1px solid var(--gh-line);
+    border-radius: 18px;
+    box-shadow: 0 20px 45px rgba(27,23,16,0.10);
+    padding: 1.75rem 1.25rem;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+
+  .stat-tile:hover{
+    transform: translateY(-4px);
+    box-shadow: 0 26px 55px rgba(27,23,16,0.14);
+  }
+
+  .stat-icon{
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--gh-copper-light), var(--gh-copper));
+    color: #fff;
+    font-size: 1.4rem;
+    margin: 0 auto 0.9rem;
+  }
+
+  .stat-tile h3{ font-weight: 700; }
+
+  /* ===== Секция "почему мы" ===== */
+  .section-eyebrow{
+    color: var(--gh-copper);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+  }
+
+  .feature-row .feature-item{
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .feature-row .feature-icon{
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    background: rgba(181,101,45,0.10);
+    color: var(--gh-copper);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+  }
+
+  /* ===== CTA-блок ===== */
+  .cta-panel{
+    background: var(--gh-ink);
+    border-radius: 28px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .cta-panel::before{
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 85% 20%, rgba(181,101,45,0.35), transparent 55%);
+  }
+{% endblock %}
 
 {% block content %}
-<!-- Баннер / Герой-секция отеля -->
-<div class="row align-items-center py-5 mb-5 bg-dark text-white rounded-4 shadow p-4 p-md-5 position-relative overflow-hidden">
-    <div class="col-lg-7 position-relative" style="z-index: 2;">
-        <span class="badge bg-primary px-3 py-2 mb-3 fw-bold">Современный Отель & Релакс</span>
-        <h1 class="display-4 fw-bold mb-3">Добро пожаловать в Grand Hotel</h1>
-        <p class="lead mb-4 text-light opacity-75">
-            Забронируйте идеальный номер с помощью нашей интерактивной 2D-схемы этажей и совершите 3D-экскурсию по комнатам еще до приезда!
+
+<!-- Обложка / Hero-секция -->
+<div class="hero-cover">
+  <div class="container position-relative" style="z-index: 2;">
+    <div class="row">
+      <div class="col-lg-7">
+        <span class="hero-eyebrow mb-4"><i class="bi bi-stars"></i> Современный отель &amp; релакс</span>
+        <h1 class="fw-bold mt-4 mb-3">Добро пожаловать<br>в Aurelio Hotel</h1>
+        <p class="lead mb-4">
+          Забронируйте идеальный номер с помощью интерактивной 2D-схемы этажей и совершите 3D-экскурсию по комнатам ещё до приезда.
         </p>
-        <div class="d-flex flex-wrap gap-3">
-            <a href="{% url 'rooms:hotel_floors' %}" class="btn btn-primary btn-lg px-4 fw-bold shadow">
-                <i class="bi bi-layers-half me-2"></i> Выбрать номер на схеме этажей
-            </a>
+        <div class="d-flex flex-wrap gap-3 mb-4">
+          <a href="{% url 'rooms:hotel_floors' %}" class="btn btn-copper btn-lg px-4">
+            <i class="bi bi-layers-half me-2"></i>Выбрать номер на схеме
+          </a>
+          <a href="#stats" class="btn btn-outline-light btn-lg px-4 rounded-pill">
+            Узнать больше
+          </a>
         </div>
+        <div class="hero-rating">
+          <span><i class="bi bi-star-fill text-warning"></i><i class="bi bi-star-fill text-warning"></i><i class="bi bi-star-fill text-warning"></i><i class="bi bi-star-fill text-warning"></i><i class="bi bi-star-fill text-warning"></i></span>
+          <span>4.9 из 5 — по отзывам гостей</span>
+        </div>
+      </div>
     </div>
-    <div class="col-lg-5 d-none d-lg-block text-center position-relative" style="z-index: 2;">
-        <i class="bi bi-building fs-1 text-primary" style="font-size: 10rem !important; opacity: 0.8;"></i>
-    </div>
+  </div>
 </div>
 
-# Статистика отеля
-<div class="row g-4 mb-5 text-center">
+<!-- Плавающая статистика -->
+<div class="container stats-float mb-5" id="stats">
+  <div class="row g-4 text-center">
     <div class="col-md-4">
-        <div class="card border-0 shadow-sm p-4 h-100">
-            <div class="fs-1 text-primary mb-2"><i class="bi bi-building-up"></i></div>
-            <h3 class="fw-bold mb-1">{{ total_floors }}</h3>
-            <p class="text-muted mb-0">Комфортабельных этажей</p>
-        </div>
+      <div class="stat-tile h-100">
+        <div class="stat-icon"><i class="bi bi-building-up"></i></div>
+        <h3 class="mb-1">{{ total_floors }}</h3>
+        <p class="text-muted mb-0">Комфортабельных этажей</p>
+      </div>
     </div>
     <div class="col-md-4">
-        <div class="card border-0 shadow-sm p-4 h-100">
-            <div class="fs-1 text-primary mb-2"><i class="bi bi-door-open-fill"></i></div>
-            <h3 class="fw-bold mb-1">{{ total_rooms }}</h3>
-            <p class="text-muted mb-0">Уютных номеров</p>
-        </div>
+      <div class="stat-tile h-100">
+        <div class="stat-icon"><i class="bi bi-door-open-fill"></i></div>
+        <h3 class="mb-1">{{ total_rooms }}</h3>
+        <p class="text-muted mb-0">Уютных номеров</p>
+      </div>
     </div>
     <div class="col-md-4">
-        <div class="card border-0 shadow-sm p-4 h-100">
-            <div class="fs-1 text-primary mb-2"><i class="bi bi-tag-fill"></i></div>
-            <h3 class="fw-bold mb-1">от ${{ min_price }}</h3>
-            <p class="text-muted mb-0">Лучшие цены за ночь</p>
-        </div>
+      <div class="stat-tile h-100">
+        <div class="stat-icon"><i class="bi bi-tag-fill"></i></div>
+        <h3 class="mb-1">от ${{ min_price }}</h3>
+        <p class="text-muted mb-0">Лучшие цены за ночь</p>
+      </div>
     </div>
+  </div>
 </div>
 
-# Карточка призыва к действию
-<div class="card border-primary bg-primary bg-opacity-10 shadow-sm p-4 rounded-4 text-center">
-    <h3 class="fw-bold mb-2">Хотите увидеть планировку отеля?</h3>
-    <p class="text-muted mb-3">Выберите нужный этаж, кликните по номеру на чертеже и виртуально прогуляйтесь по комнате.</p>
-    <div>
-        <a href="{% url 'rooms:hotel_floors' %}" class="btn btn-primary px-5 py-2 fw-bold">
-            <i class="bi bi-map me-2"></i>Перейти к схеме отеля
-        </a>
+<!-- Почему мы -->
+<div class="container mb-5 py-4">
+  <div class="row g-5 align-items-center">
+    <div class="col-lg-5">
+      <span class="section-eyebrow">Почему выбирают нас</span>
+      <h2 class="fw-bold mt-2 mb-3">Бронирование, которому можно доверять глазам</h2>
+      <p class="text-muted">
+        Мы не просто показываем фотографии — мы даём заглянуть внутрь каждого номера через 2D-схему этажа и полноценный 3D-тур, чтобы вы точно знали, куда заезжаете.
+      </p>
     </div>
+    <div class="col-lg-7">
+      <div class="row g-4 feature-row">
+        <div class="col-md-6">
+          <div class="feature-item">
+            <div class="feature-icon"><i class="bi bi-layers-half"></i></div>
+            <div>
+              <h6 class="fw-bold mb-1">2D-схема этажей</h6>
+              <p class="text-muted small mb-0">Наглядная навигация по зданию — выбирайте номер прямо на плане.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="feature-item">
+            <div class="feature-icon"><i class="bi bi-badge-3d"></i></div>
+            <div>
+              <h6 class="fw-bold mb-1">3D-тур по комнатам</h6>
+              <p class="text-muted small mb-0">Виртуальная прогулка на 360° внутри каждого номера.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="feature-item">
+            <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
+            <div>
+              <h6 class="fw-bold mb-1">Безопасное бронирование</h6>
+              <p class="text-muted small mb-0">Прозрачные условия и подтверждение брони онлайн.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="feature-item">
+            <div class="feature-icon"><i class="bi bi-headset"></i></div>
+            <div>
+              <h6 class="fw-bold mb-1">Поддержка 24/7</h6>
+              <p class="text-muted small mb-0">Ресепшн и служба поддержки на связи круглосуточно.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- Призыв к действию -->
+<div class="container mb-5">
+  <div class="cta-panel p-5 text-center">
+    <div class="position-relative" style="z-index: 1;">
+      <h3 class="fw-bold text-white mb-2">Хотите увидеть планировку отеля?</h3>
+      <p class="text-white-50 mb-4">Выберите нужный этаж, кликните по номеру на чертеже и виртуально прогуляйтесь по комнате.</p>
+      <a href="{% url 'rooms:hotel_floors' %}" class="btn btn-copper px-5 py-2 fw-bold">
+        <i class="bi bi-map me-2"></i>Перейти к схеме отеля
+      </a>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
