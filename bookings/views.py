@@ -190,7 +190,7 @@ def availability_api(request):
 
     nights = (check_out - check_in).days
     payload['nights'] = nights
-    payload['total'] = round(float(room.price_per_night) * nights, 2)
+    payload['total'] = round(float(room.get_price_for_dates(check_in, check_out)), 2)
     payload['available'] = Booking.is_room_free(room, check_in, check_out)
     payload['message'] = (
         "Номер свободен на выбранные даты."

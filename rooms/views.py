@@ -86,7 +86,7 @@ def room_search(request):
         for room in rooms:
             room.is_free = room.pk not in busy_ids
             room.stay_nights = nights
-            room.stay_total = room.price_per_night * nights
+            room.stay_total = room.get_price_for_dates(check_in, check_out)
             results.append(room)
 
     free_rooms = [room for room in results if room.is_free]

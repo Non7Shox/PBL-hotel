@@ -74,7 +74,7 @@
         </ul>
       </div>
 
-      {% if booking.room.homebyme_embed_url %}
+      {% if booking.room.homebyme_embed_url or booking.room.model_3d %}
         <a href="{% url 'rooms:room_detail' booking.room.pk %}" class="btn btn-copper w-100">Посмотреть 3D-тур номера</a>
       {% endif %}
     </div>

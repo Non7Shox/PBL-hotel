@@ -1,11 +1,41 @@
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import LoginView
 from django.shortcuts import redirect, render
+from django.urls import reverse
 
 from bookings.models import Booking
+from staff.decorators import is_staff_member
 
-from .forms import SignUpForm
+from .forms import SignUpForm, StaffLoginForm
+
+
+class SmartLoginView(LoginView):
+    """Умный вход для пользователей с автоматической маршрутизацией по ролям."""
+    template_name = 'accounts/login.html'
+
+    def get_success_url(self):
+        explicit_next = self.get_redirect_url()
+        if explicit_next:
+            return explicit_next
+        if self.request.user.is_superuser:
+            return reverse('staff:dashboard')
+        if is_staff_member(self.request.user):
+            return reverse('staff:dashboard')
+        return reverse('bookings:my_bookings')
+
+
+class StaffLoginView(LoginView):
+    """Специализированная точка входа для персонала и администрации."""
+    template_name = 'accounts/staff_login.html'
+    authentication_form = StaffLoginForm
+
+    def get_success_url(self):
+        explicit_next = self.get_redirect_url()
+        if explicit_next:
+            return explicit_next
+        return reverse('staff:dashboard')
 
 
 def signup(request):

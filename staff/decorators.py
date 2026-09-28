@@ -29,7 +29,7 @@ def staff_required(view_func):
     def _wrapped(request, *args, **kwargs):
         if not request.user.is_authenticated:
             messages.info(request, "Войдите в аккаунт сотрудника, чтобы открыть рабочую панель.")
-            return redirect('accounts:login')
+            return redirect(f"/accounts/staff-login/?next={request.path}")
         if not is_staff_member(request.user):
             messages.error(request, "Доступ в рабочую панель только для персонала отеля.")
             return redirect('rooms:room_list')

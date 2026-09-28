@@ -1,5 +1,6 @@
 import random
 
+import django
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
@@ -87,6 +88,10 @@ class Booking(models.Model):
     guest_phone = models.CharField(max_length=30, blank=True, verbose_name="Телефон гостя")
     special_requests = models.TextField(blank=True, verbose_name="Пожелания")
 
+    
+    is_paid = models.BooleanField(default=False, verbose_name="Оплачено")
+    payment_id = models.CharField(max_length=255, blank=True, null=True, verbose_name="ID платежа (Payme/Click/Stripe)")
+
     total_price = models.DecimalField(
         max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="Итоговая сумма"
     )
@@ -107,7 +112,7 @@ class Booking(models.Model):
         ordering = ('-created_at',)
         constraints = [
             models.CheckConstraint(
-                condition=Q(check_out__gt=F('check_in')),
+                **{('condition' if django.VERSION >= (5, 1) else 'check'): Q(check_out__gt=F('check_in'))},
                 name='booking_check_out_after_check_in',
             ),
         ]
@@ -163,8 +168,8 @@ class Booking(models.Model):
         return self.STAFF_TRANSITIONS.get(self.status, [])
 
     def recalculate_total(self):
-        if self.room_id and self.nights:
-            return self.room.price_per_night * self.nights
+        if self.room_id and self.check_in and self.check_out and self.check_out > self.check_in:
+            return self.room.get_price_for_dates(self.check_in, self.check_out)
         return None
 
     def get_absolute_url(self):

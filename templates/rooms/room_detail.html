@@ -4,11 +4,13 @@
 
 {% block extra_css %}
 <style>
-    .iframe-3d {
+    .viewer-3d, .iframe-3d {
         width: 100%;
         height: 550px;
         border: 0;
         border-radius: 12px;
+        background-color: var(--gh-bg);
+        outline: none;
     }
 
     /* Хлебные крошки */
@@ -187,13 +189,23 @@
                         </button>
                     </div>
 
-                    {% if room.homebyme_embed_url %}
+                    {% if room.model_3d %}
+                        <model-viewer id="roomModelViewer"
+                                      class="viewer-3d"
+                                      src="{{ room.model_3d.url }}"
+                                      alt="{{ room.title }}"
+                                      camera-controls
+                                      touch-action="pan-y"
+                                      auto-rotate
+                                      shadow-intensity="1">
+                        </model-viewer>
+                    {% elif room.homebyme_embed_url %}
                         <iframe id="homebymeFrame" class="iframe-3d" src="{{ room.homebyme_embed_url }}" allowfullscreen></iframe>
                     {% else %}
                         <div class="text-center py-5 text-muted rounded d-flex flex-column justify-content-center align-items-center" style="height: 450px; background: var(--gh-bg); border: 1px dashed var(--gh-line);">
                             <i class="bi bi-camera-video-off fs-1 mb-2"></i>
-                            <p class="mb-0 fw-bold">3D-тур временно недоступен.</p>
-                            <small>Укажите URL в панели администратора.</small>
+                            <p class="mb-0 fw-bold">3D-тур / модель временно недоступны.</p>
+                            <small>Загрузите файл .glb или укажите URL HomeByMe в панели администратора.</small>
                         </div>
                     {% endif %}
                 </div>
@@ -204,11 +216,16 @@
                     <hr style="border-color: var(--gh-line);">
                     <h5 class="fw-bold mb-3">Удобства номера</h5>
                     <div class="row g-3">
-                        <div class="col-6 col-md-4"><div class="amenity-pill"><i class="bi bi-wifi"></i>Скоростной Wi-Fi</div></div>
-                        <div class="col-6 col-md-4"><div class="amenity-pill"><i class="bi bi-snow"></i>Кондиционер</div></div>
-                        <div class="col-6 col-md-4"><div class="amenity-pill"><i class="bi bi-tv"></i>Smart TV</div></div>
-                        <div class="col-6 col-md-4"><div class="amenity-pill"><i class="bi bi-cup-hot"></i>Завтрак включен</div></div>
-                        <div class="col-6 col-md-4"><div class="amenity-pill"><i class="bi bi-shield-check"></i>Сейф</div></div>
+                        {% for amenity in room.amenities.all %}
+                        <div class="col-6 col-md-4">
+                            <div class="amenity-pill">
+                                {% if amenity.icon_class %}<i class="{{ amenity.icon_class }}"></i>{% else %}<i class="bi bi-check-circle"></i>{% endif %}
+                                {{ amenity.name }}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12"><p class="text-muted mb-0">Удобства уточняются.</p></div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -266,23 +283,20 @@
                 {% if user.is_authenticated %}
                     <form method="post" action="{% url 'rooms:add_review' room.pk %}">
                         {% csrf_token %}
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <label class="form-label" for="{{ review_form.rating.id_for_label }}">{{ review_form.rating.label }}</label>
-                                {{ review_form.rating }}
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label" for="{{ review_form.comment.id_for_label }}">{{ review_form.comment.label }}</label>
-                                {{ review_form.comment }}
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Ваша оценка</label>
+                            {{ review_form.rating }}
                         </div>
-                        <button type="submit" class="btn btn-copper mt-3">Оставить отзыв</button>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Комментарий</label>
+                            {{ review_form.comment }}
+                        </div>
+                        <button type="submit" class="btn btn-copper btn-sm w-100">Оставить отзыв</button>
                     </form>
                 {% else %}
-                    <p class="mb-0"><a href="{% url 'accounts:login' %}?next={% url 'rooms:room_detail' room.pk %}">Войдите</a>, чтобы оставить отзыв.</p>
+                    <p class="text-muted small mb-0"><a href="{% url 'accounts:login' %}?next={{ request.path }}">Войдите</a>, чтобы оставить отзыв.</p>
                 {% endif %}
             </div>
-        </div>
         </div>
     </div>
 </div>
@@ -290,18 +304,19 @@
 {% endblock %}
 
 {% block extra_js %}
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
 <script>
     function toggleFullScreen() {
-        var iframe = document.getElementById("homebymeFrame");
-        if (!iframe) return;
+        var el = document.getElementById("roomModelViewer") || document.getElementById("homebymeFrame");
+        if (!el) return;
         
         if (!document.fullscreenElement) {
-            if (iframe.requestFullscreen) {
-                iframe.requestFullscreen();
-            } else if (iframe.webkitRequestFullscreen) {
-                iframe.webkitRequestFullscreen();
-            } else if (iframe.msRequestFullscreen) {
-                iframe.msRequestFullscreen();
+            if (el.requestFullscreen) {
+                el.requestFullscreen();
+            } else if (el.webkitRequestFullscreen) {
+                el.webkitRequestFullscreen();
+            } else if (el.msRequestFullscreen) {
+                el.msRequestFullscreen();
             }
         } else {
             if (document.exitFullscreen) {

@@ -45,3 +45,30 @@ class SignUpForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
+
+class StaffLoginForm(AuthenticationForm):
+    """Форма входа специально для персонала с валидацией прав сотрудника."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].label = "Служебный логин"
+        self.fields['username'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Логин сотрудника или e-mail'
+        })
+        self.fields['password'].label = "Пароль"
+        self.fields['password'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': '••••••••'
+        })
+
+    def confirm_login_allowed(self, user):
+        super().confirm_login_allowed(user)
+        from staff.decorators import is_staff_member
+        if not is_staff_member(user):
+            raise forms.ValidationError(
+                "Данная учетная запись не имеет прав доступа персонала. "
+                "Если вы гость, пожалуйста, используйте обычную форму входа для гостей.",
+                code='not_staff'
+            )

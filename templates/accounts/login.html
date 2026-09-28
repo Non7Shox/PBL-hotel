@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
-{% block title %}Вход — Aurelio Hotel{% endblock %}
+{% block title %}Вход для гостей — Aurelio Hotel{% endblock %}
 
 {% block content %}
 <section class="page-band">
   <div class="container">
-    <span class="hero-eyebrow">Гостям и персоналу</span>
-    <h1 class="mt-3">Вход в аккаунт</h1>
-    <p>Гости видят свои брони, персонал — рабочую панель.</p>
+    <span class="hero-eyebrow">Личный кабинет</span>
+    <h1 class="mt-3">Вход для гостей</h1>
+    <p>Управляйте своими бронированиями, смотрите историю поездок и оставляйте отзывы.</p>
   </div>
 </section>
 
@@ -27,16 +27,27 @@
               {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
             </div>
           {% endfor %}
-          <button type="submit" class="btn btn-copper w-100">Войти</button>
+          <button type="submit" class="btn btn-copper w-100">Войти в аккаунт</button>
         </form>
       </div>
     </div>
     <div class="col-lg-4">
-      <div class="panel-card">
+      <div class="panel-card mb-4">
         <div class="panel-title">Нет аккаунта?</div>
-        <p class="small text-muted">Регистрация займёт минуту. Брони можно искать и без аккаунта — по коду из письма.</p>
+        <p class="small text-muted">Регистрация займет одну минуту. Вы сможете быстро бронировать номера и отслеживать статус.</p>
         <a href="{% url 'accounts:signup' %}" class="btn btn-outline-copper w-100 mb-2">Создать аккаунт</a>
         <a href="{% url 'bookings:booking_lookup' %}" class="btn btn-outline-copper w-100">Найти бронь по коду</a>
+      </div>
+
+      <div class="panel-card" style="border-left: 3px solid var(--gold);">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi bi-shield-lock" style="color: var(--gold); font-size: 1.25rem;"></i>
+          <span class="fw-bold">Служебный вход</span>
+        </div>
+        <p class="small text-muted mb-3">Для администраторов, менеджеров и персонала отеля выделен отдельный портал.</p>
+        <a href="{% url 'accounts:staff_login' %}" class="btn btn-sm btn-outline-copper w-100">
+          <i class="bi bi-person-badge me-1"></i>Вход для персонала
+        </a>
       </div>
     </div>
   </div>

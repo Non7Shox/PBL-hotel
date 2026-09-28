@@ -200,7 +200,16 @@
                                 {% else %}
                                     <div class="py-5 text-light text-center">
                                         <i class="bi bi-image-alt fs-1 text-muted"></i>
-                                        <p class="mt-2 mb-0">Загрузите фото плана для {{ f.number }} этажа в админке.</p>
+                                        <p class="mt-2 mb-3">Загрузите фото плана для {{ f.number }} этажа в админке.</p>
+                                        {% if f.rooms.all %}
+                                            <div class="d-flex flex-wrap justify-content-center gap-2 mt-2">
+                                                {% for room in f.rooms.all %}
+                                                    <a href="{% url 'rooms:room_detail' room.id %}" class="btn btn-copper btn-sm">
+                                                        <i class="bi bi-door-closed-fill me-1"></i>{{ room.title }}
+                                                    </a>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
                                     </div>
                                 {% endif %}
 

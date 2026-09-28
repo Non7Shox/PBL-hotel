@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+﻿from django.contrib.auth.models import User
 from django.db import models
 
 
@@ -14,6 +14,24 @@ class Floor(models.Model):
 
     def __str__(self):
         return f"{self.number} этаж ({self.title})"
+
+
+class Amenity(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Название удобства")
+    icon_class = models.CharField(
+        max_length=100, 
+        blank=True, 
+        verbose_name="Иконка (CSS класс)", 
+        help_text="Например: fa-solid fa-wifi"
+    )
+
+    class Meta:
+        verbose_name = "Удобство"
+        verbose_name_plural = "Удобства"
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
 
 
 class Room(models.Model):
@@ -40,7 +58,11 @@ class Room(models.Model):
     image = models.ImageField(upload_to='rooms/', blank=True, null=True, verbose_name="Фото номера")
     price_per_night = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена за ночь ($)")
     capacity = models.IntegerField(default=2, verbose_name="Вместимость (чел)")
+    
+    amenities = models.ManyToManyField(Amenity, blank=True, related_name='rooms', verbose_name="Удобства")
+
     homebyme_embed_url = models.URLField(blank=True, null=True, verbose_name="Ссылка на 3D-тур HomeByMe")
+    model_3d = models.FileField(upload_to='rooms_3d/', blank=True, null=True, verbose_name="3D-модель номера (.glb)")
     x_pos = models.IntegerField(default=50, verbose_name="Позиция X (%)")
     y_pos = models.IntegerField(default=50, verbose_name="Позиция Y (%)")
     is_active = models.BooleanField(default=True, verbose_name="Доступен для бронирования")
@@ -71,6 +93,32 @@ class Room(models.Model):
     @property
     def reviews_count(self):
         return self.reviews.filter(is_published=True).count()
+
+
+    def get_price_for_dates(self, check_in, check_out):
+        from datetime import timedelta
+        
+        nights = (check_out - check_in).days
+        if nights <= 0:
+            return 0
+            
+        # Get all rates intersecting with the stay
+        rates = list(self.seasonal_rates.filter(
+            end_date__gte=check_in,
+            start_date__lt=check_out
+        ))
+        
+        total = 0
+        current_date = check_in
+        while current_date < check_out:
+            applicable = next((r for r in rates if r.start_date <= current_date <= r.end_date), None)
+            if applicable:
+                total += applicable.price_per_night
+            else:
+                total += self.price_per_night
+            current_date += timedelta(days=1)
+            
+        return total
 
     def is_free(self, check_in, check_out):
         """Свободен ли номер на выбранный период (учитываются активные брони)."""
@@ -123,3 +171,24 @@ class Review(models.Model):
     @property
     def stars(self):
         return range(1, 6)
+
+
+class SeasonalRate(models.Model):
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='seasonal_rates', verbose_name="Номер")
+    start_date = models.DateField(verbose_name="Начало периода")
+    end_date = models.DateField(verbose_name="Конец периода")
+    price_per_night = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена за ночь ($)")
+
+    class Meta:
+        verbose_name = "Сезонная цена"
+        verbose_name_plural = "Сезонные цены"
+        ordering = ['start_date']
+
+    def __str__(self):
+        return f"{self.room.title}: {self.start_date} - {self.end_date} (${self.price_per_night})"
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.start_date and self.end_date and self.start_date > self.end_date:
+            raise ValidationError("Дата начала не может быть позже даты конца.")
+

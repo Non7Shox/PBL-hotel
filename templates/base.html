@@ -425,6 +425,7 @@
         {% else %}
           <li class="nav-item"><a class="nav-link" href="{% url 'bookings:booking_lookup' %}">Моя бронь</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Вход</a></li>
+          <li class="nav-item d-none d-lg-block"><a class="nav-link text-white-50" href="{% url 'accounts:staff_login' %}" title="Вход для сотрудников"><i class="bi bi-shield-lock"></i></a></li>
         {% endif %}
 
         <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
@@ -474,6 +475,7 @@
           <li><a href="{% url 'rooms:room_list' %}">Главная</a></li>
           <li><a href="{% url 'rooms:room_list' %}#stay">Номера</a></li>
           <li><a href="{% url 'rooms:hotel_floors' %}">Схема этажей</a></li>
+          <li><a href="{% url 'accounts:staff_login' %}" class="text-muted"><i class="bi bi-shield-lock me-1"></i>Портал персонала</a></li>
         </ul>
       </div>
 
