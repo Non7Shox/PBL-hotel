@@ -44,7 +44,7 @@ class BookingForm(forms.ModelForm):
 
     def __init__(self, *args, room=None, user=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.room = room or self.instance.room
+        self.room = room or (self.instance.room if self.instance.room_id else None)
         self.user = user if (user and user.is_authenticated) else None
 
         today = timezone.localdate()
@@ -84,8 +84,6 @@ class BookingForm(forms.ModelForm):
     def clean(self):
         cleaned = super().clean()
         room = self.room or cleaned.get('room')
-        if room is None:
-            room = Room.objects.filter(pk=self.data.get('room')).first()
         check_in = cleaned.get('check_in')
         check_out = cleaned.get('check_out')
         guests = cleaned.get('guests')

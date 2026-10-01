@@ -425,8 +425,13 @@
         {% else %}
           <li class="nav-item"><a class="nav-link" href="{% url 'bookings:booking_lookup' %}">Моя бронь</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Вход</a></li>
-          <li class="nav-item d-none d-lg-block"><a class="nav-link text-white-50" href="{% url 'accounts:staff_login' %}" title="Вход для сотрудников"><i class="bi bi-shield-lock"></i></a></li>
         {% endif %}
+
+        <li class="nav-item">
+          <a class="nav-link" href="{% if is_staff_member %}{% url 'staff:dashboard' %}{% else %}{% url 'accounts:staff_login' %}{% endif %}">
+            <i class="bi bi-shield-lock me-1"></i>Персонал
+          </a>
+        </li>
 
         <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
           <a href="{% url 'rooms:room_search' %}" class="btn btn-gold btn-sm">Забронировать</a>
@@ -463,9 +468,9 @@
         </div>
         <p class="mb-4" style="max-width: 320px;">Тихий городской отель в Ташкенте. Смотрите номер на плане этажа и пройдите 3D-тур ещё до заезда.</p>
         <div class="social-icons d-flex gap-2">
-          <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-          <a href="#" aria-label="Telegram"><i class="bi bi-telegram"></i></a>
-          <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+          <a href="https://www.instagram.com/" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+          <a href="https://web.telegram.org/a/" aria-label="Telegram"><i class="bi bi-telegram"></i></a>
+          <a href="https://www.facebook.com/" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
         </div>
       </div>
 
@@ -475,7 +480,7 @@
           <li><a href="{% url 'rooms:room_list' %}">Главная</a></li>
           <li><a href="{% url 'rooms:room_list' %}#stay">Номера</a></li>
           <li><a href="{% url 'rooms:hotel_floors' %}">Схема этажей</a></li>
-          <li><a href="{% url 'accounts:staff_login' %}" class="text-muted"><i class="bi bi-shield-lock me-1"></i>Портал персонала</a></li>
+          <li><a href="{% if is_staff_member %}{% url 'staff:dashboard' %}{% else %}{% url 'accounts:staff_login' %}{% endif %}"><i class="bi bi-shield-lock me-1"></i>Портал персонала</a></li>
         </ul>
       </div>
 
