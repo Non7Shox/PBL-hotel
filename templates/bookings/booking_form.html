@@ -70,7 +70,7 @@
             <a href="{% url 'rooms:room_detail' room.pk %}" class="btn btn-outline-copper px-4">Назад к номеру</a>
           </div>
           <p class="small text-muted mt-3 mb-0">
-            <i class="bi bi-shield-check me-1"></i>Оплата при заселении. Отмена без штрафа — не позднее чем за 24 часа до заезда.
+            <i class="ph ph-shield-check me-1"></i>Оплата при заселении. Отмена без штрафа — не позднее чем за 24 часа до заезда.
           </p>
         </form>
       </div>
@@ -99,12 +99,17 @@
           </ul>
           <p class="small text-muted mb-0 mt-3">Выбирайте даты вне этих интервалов — заявка пройдёт сразу.</p>
         {% else %}
-          <p class="text-muted mb-0 small">Номер полностью свободен. Отличный выбор!</p>
+          <p class="text-muted mb-0 small">Ближайших заездов нет, номер свободен на любые даты.</p>
         {% endif %}
       </div>
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_style %}
+  /* Пока цена пересчитывается, на месте расчёта стоит скелетон той же формы */
+  #calcBox .calc-skeleton{ display: flex; flex-direction: column; gap: 12px; }
 {% endblock %}
 
 {% block extra_js %}
@@ -128,18 +133,18 @@
       if (!checkIn.value || !checkOut.value) return;
       var url = form.dataset.availabilityUrl + '?room=' + form.dataset.room +
                 '&check_in=' + checkIn.value + '&check_out=' + checkOut.value;
+      box.innerHTML = '<div class="calc-skeleton" aria-label="Считаем стоимость"><span class="skeleton" style="width:40%"></span><span class="skeleton" style="width:60%;height:24px"></span></div>';
       fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
         .then(function (response) { return response.json(); })
         .then(function (data) {
           if (!data.ok) { show('Проверьте даты.', true); return; }
           box.innerHTML = '<p class="mb-2">Ночей: <strong>' + data.nights + '</strong></p>' +
                           '<p class="mb-2">Итого: <strong class="serif-number fs-4">' +
-                          data.currency + Number(data.total).toFixed(2) + '</strong></p>' +
-                          '<p class="mb-0 text-muted">' + data.message + '</p>';
+                          data.currency + Number(data.total).toFixed(2) + '</strong></p>';
           show(data.message, !data.available);
           if (submit) submit.disabled = !data.available;
         })
-        .catch(function () { show('Не удалось проверить занятость. Попробуйте ещё раз.', true); });
+        .catch(function () { box.innerHTML = ''; show('Не удалось проверить занятость. Проверьте подключение и выберите даты ещё раз.', true); });
     }
 
     checkIn.addEventListener('change', function () {

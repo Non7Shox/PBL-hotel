@@ -1,0 +1,16 @@
+{% if telegram_link %}
+  <div class="panel-card mb-4">
+    <div class="d-flex align-items-start gap-3">
+      <span class="brand-mark"><i class="ph ph-telegram-logo"></i></span>
+      <div>
+        <div class="panel-title mb-1">Уведомления в Telegram</div>
+        {% if booking.telegram_chat_id %}
+          <p class="small text-muted mb-0">Подключены. Подтверждение брони и напоминание о заезде придут в бот.</p>
+        {% else %}
+          <p class="small text-muted mb-3">Подтверждение брони и напоминание за день до заезда придут в Telegram.</p>
+          <a href="{{ telegram_link }}" class="btn btn-outline-copper btn-sm" target="_blank" rel="noopener">Подключить уведомления</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endif %}

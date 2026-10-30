@@ -39,6 +39,8 @@
         </ol>
       </div>
 
+      {% include 'bookings/_telegram_card.html' %}
+
       <div class="d-flex flex-wrap gap-3">
         <a href="{% url 'bookings:booking_detail' booking.code %}" class="btn btn-copper px-4">Открыть бронь</a>
         {% if user.is_authenticated %}

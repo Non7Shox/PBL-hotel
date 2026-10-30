@@ -14,10 +14,10 @@
 <div class="container pb-5">
   <div class="row g-4 justify-content-center">
     <div class="col-lg-5">
-      <div class="panel-card" style="box-shadow: 0 12px 30px rgba(0,0,0,0.06);">
+      <div class="panel-card">
         <div class="d-flex align-items-center gap-3 mb-4 pb-3" style="border-bottom: 1px solid var(--gh-line);">
-          <div class="brand-mark" style="width: 44px; height: 44px; font-size: 1.2rem;">
-            <i class="bi bi-shield-lock-fill"></i>
+          <div class="brand-mark">
+            <i class="ph-fill ph-lock-key"></i>
           </div>
           <div>
             <h5 class="fw-bold mb-0">Авторизация сотрудника</h5>
@@ -39,7 +39,7 @@
             </div>
           {% endfor %}
           <button type="submit" class="btn btn-copper w-100 py-2 fw-semibold mt-2">
-            <i class="bi bi-box-arrow-in-right me-2"></i>Войти в служебную панель
+            <i class="ph ph-sign-in me-2"></i>Войти в служебную панель
           </button>
         </form>
       </div>
@@ -50,16 +50,16 @@
         <div class="panel-title">Быстрый переход для гостей</div>
         <p class="small text-muted">Если вы гость отеля и хотите посмотреть свои бронирования или забронировать номер, перейдите в гостевой раздел.</p>
         <a href="{% url 'accounts:login' %}" class="btn btn-outline-copper w-100 mb-2">
-          <i class="bi bi-person me-1"></i>Гостевой вход
+          <i class="ph ph-user me-1"></i>Гостевой вход
         </a>
         <a href="{% url 'accounts:signup' %}" class="btn btn-outline-copper w-100">
-          <i class="bi bi-person-plus me-1"></i>Регистрация гостя
+          <i class="ph ph-user-plus me-1"></i>Регистрация гостя
         </a>
       </div>
 
-      <div class="panel-card" style="background: rgba(196, 163, 106, 0.08); border: 1px solid rgba(196, 163, 106, 0.25);">
+      <div class="panel-card" style="background: var(--bg);">
         <div class="d-flex align-items-center gap-2 mb-2">
-          <i class="bi bi-info-circle-fill" style="color: var(--gold);"></i>
+          <i class="ph ph-info text-muted"></i>
           <span class="fw-bold small">Справка по доступу</span>
         </div>
         <p class="small text-muted mb-0">

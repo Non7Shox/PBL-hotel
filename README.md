@@ -128,6 +128,29 @@ python manage.py runserver
 
 Open your browser at **http://127.0.0.1:8000/**
 
+### Environment variables
+
+The defaults work for local development, so nothing needs to be set to run the project. For a production deployment, set:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `DJANGO_DEBUG` | `True` | Set to `False` in production |
+| `DJANGO_SECRET_KEY` | local dev key | **Required** when `DJANGO_DEBUG=False` — the app refuses to start without it |
+| `DJANGO_ALLOWED_HOSTS` | `127.0.0.1,localhost` | Comma-separated list of host names the site is served on |
+| `DJANGO_SITE_URL` | `http://127.0.0.1:8001` | Public address of the site, used in bot messages |
+| `TELEGRAM_BOT_TOKEN` | empty (bot off) | Token from @BotFather, see [Telegram bot](#-telegram-bot) |
+| `TELEGRAM_BOT_USERNAME` | empty | Bot username without `@`, used for the "notify me in Telegram" link |
+| `TELEGRAM_STAFF_CHAT_ID` | empty | Reception chat that receives bookings and the morning summary |
+| `TELEGRAM_DIGEST_HOUR` | `8` | Hour (Tashkent time) of the morning summary |
+
+Instead of exporting variables you can put them in a `.env` file next to `manage.py` (one `KEY=VALUE` per line; see `.env.example`). The file is git-ignored; real environment variables take precedence.
+
+Generate a secret key with:
+
+```bash
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+```
+
 ---
 
 ## 🔑 URL Map
@@ -178,7 +201,13 @@ Staff accounts are created by assigning a `StaffProfile` to a user via the admin
 python manage.py test
 ```
 
-Each Django app includes a `tests.py` module covering model logic, views and form validation.
+Each Django app includes a `tests.py` module covering model logic, views and form validation:
+
+- **rooms** — room pages, 3D tour embedding, seasonal pricing calculation
+- **bookings** — booking codes, price totals, date/capacity validation, overlap detection, the availability API and the full online booking flow
+- **accounts / staff** — guest and staff login, role-based access
+
+Tests write uploaded files to a temporary folder, so running them never touches `media/`.
 
 ---
 
@@ -206,6 +235,38 @@ MAILERS = {
     }
 }
 ```
+
+---
+
+## 🤖 Telegram bot
+
+One bot serves two audiences:
+
+**Reception chat**
+- Every new booking (site or desk) arrives as a card with **Confirm / Cancel** buttons, later **Check in / Check out**. Buttons follow the same status rules as the staff dashboard, notify the guest and update the card in place.
+- Cancellations by guests and status changes made on the site are posted to the chat.
+- A morning summary at `TELEGRAM_DIGEST_HOUR`: occupancy tonight, arrivals and departures, pending requests, month revenue. `/today` sends it on demand.
+- Buttons only work inside the configured reception chat.
+
+**Guests (private chat)**
+- The booking page has a **Connect notifications** button. It opens the bot with a signed link, so knowing a booking code alone is not enough to subscribe.
+- `/booking CODE email` links a booking manually, `/mybookings` lists linked bookings, `/stop` unsubscribes.
+- `/rooms 12.11 15.11 2` lists free rooms for the dates with the total price.
+- A reminder is sent the day before check-in.
+
+### Setup
+
+1. Create a bot with [@BotFather](https://t.me/BotFather) and copy the token.
+2. Copy `.env.example` to `.env` and fill in `TELEGRAM_BOT_TOKEN` and `TELEGRAM_BOT_USERNAME`.
+3. Start the bot in a second terminal (it uses long polling, no public address needed):
+
+   ```bash
+   python manage.py runbot
+   ```
+
+4. Add the bot to the reception group, send `/chatid` there, put the number into `TELEGRAM_STAFF_CHAT_ID` and restart both `runserver` and `runbot`.
+
+`runbot` sends the morning summary itself. To send it from a scheduler instead (or to test it), run `python manage.py bot_daily` (`--force` resends today's). Without a token the site works as before and simply skips Telegram.
 
 ---
 

@@ -1,257 +1,658 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Aurelio Hotel — тихий городской отель{% endblock %}
+{% block title %}Aurelio Hotel · номер в центре Ташкента, который видно до заезда{% endblock %}
+{% block meta_description %}Городской отель в центре Ташкента. Найдите номер на плане этажа, посмотрите его в 3D и забронируйте без предоплаты. Отмена бесплатна за 24 часа.{% endblock %}
+{% block og_title %}Aurelio Hotel · номер, который видно до заезда{% endblock %}
 
 {% block extra_style %}
-  .home-hero{
-    position: relative;
-    min-height: 100vh;
+  .section{ padding: 64px 0; }
+  @media (min-width: 992px){ .section{ padding: 96px 0; } }
+  .section-head{ max-width: 680px; margin-bottom: 32px; }
+  .section-head p{ color: var(--muted); margin: 8px 0 0; }
+
+  /* ------------------------------------------------ первый экран */
+  .hero{ padding: 48px 0 64px; }
+  @media (min-width: 992px){ .hero{ padding: 64px 0 96px; } }
+  .hero-title{
+    max-width: 680px;
+    font-size: 36px;
+    line-height: 40px;
+    margin-bottom: 16px;
+    background-image: linear-gradient(90deg, #000000, #666666);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  @media (min-width: 768px){ .hero-title{ font-size: 48px; line-height: 48px; } }
+  .hero-sub{ max-width: 680px; color: var(--muted); font-size: 18px; line-height: 28px; margin-bottom: 32px; }
+
+  .search-card{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-2xl);
+    padding: 16px;
+    max-width: 680px;
+  }
+  .search-card .btn{ width: 100%; }
+
+  .proof{
     display: flex;
-    align-items: flex-end;
-    color: #fff;
-    background:
-      linear-gradient(180deg, rgba(20,18,15,0.28) 0%, rgba(20,18,15,0.12) 42%, rgba(20,18,15,0.78) 100%),
-      url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=2000&q=80') center/cover no-repeat;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    margin-top: 24px;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--muted);
   }
+  .proof span{ display: inline-flex; align-items: center; gap: 8px; }
+  .proof strong{ color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .proof .ph, .proof .ph-fill{ font-size: 16px; color: var(--accent); }
 
-  .home-hero h1{
-    font-size: clamp(3.2rem, 7vw, 6.4rem);
-    line-height: 0.92;
-    font-weight: 500;
-    color: #fff;
-  }
-
-  .home-hero h1 em{
-    font-style: italic;
-    font-weight: 500;
-    color: var(--gold);
-  }
-
-  .hero-kicker{
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    color: rgba(255,255,255,0.75);
-  }
-
-  .hero-meta{
-    border-top: 1px solid rgba(255,255,255,0.25);
-    padding-top: 1.1rem;
-    margin-top: 1.6rem;
-  }
-
-  .hero-meta strong{
+  .hero-photo{
+    width: 100%;
+    height: 100%;
+    min-height: 360px;
+    object-fit: cover;
+    border-radius: var(--r-2xl);
     display: block;
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.7rem;
-    font-weight: 600;
-    line-height: 1;
   }
 
-  .hero-meta span{
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.65);
+  /* ------------------------------------------------ проблема → решение */
+  .problem{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-2xl);
+    padding: 32px;
   }
+  @media (min-width: 992px){ .problem{ padding: 48px; } }
+  .problem p{ color: var(--ink-soft); font-size: 18px; line-height: 28px; margin: 0; }
 
-  .section-label{
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--gold-deep);
+  /* ------------------------------------------------ преимущества */
+  .benefit{
+    height: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-2xl);
+    padding: 24px;
   }
+  .benefit .icon{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--r-lg);
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+  .benefit h3{ font-size: 18px; line-height: 28px; margin-bottom: 4px; }
+  .benefit p{ color: var(--muted); margin: 0; }
 
-  .stay-card{
+  /* ------------------------------------------------ номера */
+  .room-card{
     position: relative;
-    min-height: 280px;
-    overflow: hidden;
-    color: #fff;
+    height: 100%;
     display: flex;
-    align-items: flex-end;
-    background-size: cover;
-    background-position: center;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-2xl);
+    transition: border-color var(--dur-color) var(--ease);
   }
-
-  .stay-card::after{
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, transparent 35%, rgba(20,18,15,0.82) 100%);
+  .room-card .room-thumb{ aspect-ratio: 4 / 3; border-bottom: 1px solid var(--line); overflow: hidden; }
+  .room-card .room-thumb img{ width: 100%; height: 100%; object-fit: cover; display: block; }
+  .room-card .room-body{ padding: 16px 24px 24px; display: flex; flex-direction: column; flex: 1; }
+  .room-card h3{ font-size: 18px; line-height: 28px; margin-bottom: 4px; }
+  .room-card h3 a{ color: var(--ink); }
+  .room-card h3 a::after{ content: ""; position: absolute; inset: 0; border-radius: var(--r-2xl); }
+  .room-meta{ color: var(--muted); font-size: 14px; line-height: 20px; margin-bottom: 16px; }
+  .room-price{ font-weight: 600; font-variant-numeric: tabular-nums; }
+  .room-more{ display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-size: 14px; line-height: 20px; transition: color var(--dur-color) var(--ease); }
+  .room-more .ph{ transition: transform var(--dur-move) var(--ease); }
+  .empty-state{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-2xl);
+    padding: 48px 24px;
+    text-align: center;
   }
+  .empty-state .ph{ font-size: 30px; color: var(--muted); }
+  .empty-state p{ color: var(--muted); margin: 8px auto 0; max-width: 420px; }
 
-  .stay-card .stay-body{ position: relative; z-index: 1; padding: 1.6rem; }
-  .stay-card h3{ font-size: 2.1rem; margin-bottom: 0.2rem; }
-  .stay-card a.stretched-link{ color: #fff; }
-  .stay-card a.stretched-link:hover{ color: var(--gold); }
-
-  .ritual{ border-top: 1px solid var(--line); padding-top: 1.4rem; }
-  .ritual .num{
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 2rem;
-    color: var(--gold-deep);
-    line-height: 1;
+  /* ------------------------------------------------ крупная фраза */
+  .tagline{ padding: 96px 0; }
+  .tagline-text{
+    max-width: 680px;
+    margin: 0;
+    font-size: 36px;
+    line-height: 40px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    text-wrap: balance;
   }
+  @media (min-width: 768px){ .tagline-text{ font-size: 48px; line-height: 48px; } }
+  .js .tagline-text .w{ opacity: 0.3; transition: opacity var(--dur-move) var(--ease); }
+  .js .tagline-text .w.on{ opacity: 1; }
 
-  .quote-band{ background: var(--ink); color: #fff; }
-  .quote-band blockquote{
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(1.7rem, 3vw, 2.6rem);
-    font-weight: 500;
-    font-style: italic;
-    line-height: 1.25;
-    max-width: 820px;
+  /* ------------------------------------------------ шаги */
+  .step{
+    height: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-2xl);
+    padding: 24px;
   }
+  .step .num{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--r-lg);
+    background: var(--ink);
+    color: #fff;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .step h3{ font-size: 18px; line-height: 28px; margin-bottom: 4px; }
+  .step p{ color: var(--muted); margin: 0; }
 
-  .visit-panel{ background: var(--surface); border: 1px solid var(--line); }
-  .visit-line{
+  /* ------------------------------------------------ что входит */
+  .feature{
+    height: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-2xl);
+  }
+  .feature img{ width: 100%; aspect-ratio: 3 / 2; object-fit: cover; display: block; }
+  .feature .feature-body{ padding: 16px 24px 24px; }
+  .feature h3{ font-size: 18px; line-height: 28px; margin-bottom: 4px; }
+  .feature p{ color: var(--muted); margin: 0; font-size: 14px; line-height: 20px; }
+
+  /* ------------------------------------------------ отзывы */
+  .review-card{
+    height: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-2xl);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .review-card blockquote{ margin: 0; color: var(--ink-soft); }
+  .review-card .who{ font-size: 14px; line-height: 20px; color: var(--muted); margin-top: auto; }
+  .review-card .who strong{ display: block; color: var(--ink); }
+  .stars{ color: #b88a1e; font-size: 16px; display: inline-flex; gap: 2px; }
+
+  /* ------------------------------------------------ вопросы */
+  .faq{ max-width: 760px; }
+  .faq details{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+  }
+  .faq details + details{ margin-top: 8px; }
+  .faq summary{
     display: flex;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 0.85rem 0;
-    border-bottom: 1px solid var(--line);
-    font-size: 0.95rem;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 24px;
+    font-weight: 500;
+    cursor: pointer;
+    list-style: none;
+    border-radius: var(--r-xl);
+    transition: background-color var(--dur-color) var(--ease);
   }
-  .visit-line span{ color: var(--muted); }
+  .faq summary::-webkit-details-marker{ display: none; }
+  .faq summary .ph{ flex-shrink: 0; color: var(--muted); transition: transform var(--dur-move) var(--ease); }
+  .faq details[open] summary .ph{ transform: rotate(45deg); }
+  .faq .answer{ padding: 0 24px 16px; color: var(--muted); }
+  .faq details[open] .answer{ animation: faq-in var(--dur-move) var(--ease); }
+  @keyframes faq-in{ from{ opacity: 0; transform: translateY(-8px); } to{ opacity: 1; transform: none; } }
+
+  /* ------------------------------------------------ финальный призыв */
+  .final{
+    background: #181818;
+    color: #fff;
+    border-radius: var(--r-2xl);
+    padding: 40px 24px;
+  }
+  @media (min-width: 992px){ .final{ padding: 64px; } }
+  .final h2{ color: #fff; max-width: 680px; }
+  .final p{ color: #b5b5b0; max-width: 560px; }
+  .final .guarantees{ list-style: none; padding: 0; margin: 24px 0 32px; display: flex; flex-wrap: wrap; gap: 8px 24px; color: #e7e7e3; font-size: 14px; line-height: 20px; }
+  .final .guarantees li{ display: inline-flex; align-items: center; gap: 8px; }
+  .final .guarantees .ph{ color: #8fc3a6; font-size: 16px; }
+  .final .btn-copper{ background: #fff; border-color: #fff; color: #111110 !important; }
+  .final .btn-copper:active{ background: #e7e7e3 !important; border-color: #e7e7e3 !important; }
+  .contact-card{
+    background: #272727;
+    border-radius: var(--r-xl);
+    padding: 24px;
+    font-size: 14px;
+    line-height: 20px;
+    color: #b5b5b0;
+  }
+  .contact-card dl{ margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 8px 24px; }
+  .contact-card dt{ font-weight: 400; color: #8d8d88; }
+  .contact-card dd{ margin: 0; color: #fff; }
+  .contact-card a{ color: #fff; }
+
+  @media (hover: hover) and (pointer: fine){
+    .room-card:hover{ border-color: var(--line-strong); }
+    .room-card:hover .room-more{ color: var(--accent); }
+    .room-card:hover .room-more .ph{ transform: translateX(4px); }
+    .faq summary:hover{ background: #fafaf8; }
+    .final .btn-copper:hover{ background: #ecece8; border-color: #ecece8; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .room-card:hover .room-more .ph, .faq details[open] summary .ph{ transform: none; }
+    .faq details[open] .answer{ animation: none; }
+  }
 {% endblock %}
 
 {% block content %}
 
-<section class="home-hero">
-  <div class="container pb-5 mb-3">
-    <div class="row align-items-end">
-      <div class="col-lg-8">
-        <p class="hero-kicker mb-3">Ташкент · с 2014</p>
-        <h1 class="mb-4">Место,<br>где город <em>затихает.</em></h1>
-        <div class="d-flex flex-wrap gap-3">
-          <a href="{% url 'rooms:hotel_floors' %}" class="btn btn-gold">Выбрать номер</a>
-          <a href="#stay" class="btn btn-ghost">Смотреть номера</a>
-        </div>
-      </div>
-      <div class="col-lg-4 mt-4 mt-lg-0">
-        <div class="row g-3 hero-meta text-lg-end">
-          <div class="col-4 col-lg-12">
-            <strong>{{ total_rooms }}</strong>
-            <span>номеров</span>
-          </div>
-          <div class="col-4 col-lg-12">
-            <strong>{{ total_floors }}</strong>
-            <span>этажей</span>
-          </div>
-          <div class="col-4 col-lg-12">
-            <strong>${{ min_price }}</strong>
-            <span>за ночь</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="stay" class="py-5">
-  <div class="container py-lg-4">
-    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
-      <div>
-        <p class="section-label mb-2">Проживание</p>
-        <h2 class="mb-0" style="font-size: clamp(2.2rem, 4vw, 3.4rem);">Три способа остаться</h2>
-      </div>
-      <a href="{% url 'rooms:hotel_floors' %}" class="btn btn-ink">Открыть схему этажей</a>
-    </div>
-
-    <div class="row g-3">
-      <div class="col-lg-7">
-        <article class="stay-card h-100" style="background-image: url('https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1400&q=80'); min-height: 520px;">
-          <div class="stay-body">
-            <p class="hero-kicker mb-1">01 · Люкс</p>
-            <h3><a href="{% url 'rooms:hotel_floors' %}" class="stretched-link">Номера с видом</a></h3>
-            <p class="mb-0" style="color: rgba(255,255,255,0.75);">Отдельная гостиная, высокие окна и тишина внутреннего двора.</p>
-          </div>
-        </article>
-      </div>
-      <div class="col-lg-5 d-flex flex-column gap-3">
-        <article class="stay-card flex-fill" style="background-image: url('https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1000&q=80');">
-          <div class="stay-body">
-            <p class="hero-kicker mb-1">02 · Делюкс</p>
-            <h3><a href="{% url 'rooms:hotel_floors' %}" class="stretched-link">Для двоих</a></h3>
-            <p class="mb-0" style="color: rgba(255,255,255,0.75);">Кровать king-size и ванная с мрамором.</p>
-          </div>
-        </article>
-        <article class="stay-card flex-fill" style="background-image: url('https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=1000&q=80');">
-          <div class="stay-body">
-            <p class="hero-kicker mb-1">03 · Стандарт</p>
-            <h3><a href="{% url 'rooms:hotel_floors' %}" class="stretched-link">Городской</a></h3>
-            <p class="mb-0" style="color: rgba(255,255,255,0.75);">Компактный номер — от ${{ min_price }} за ночь.</p>
-          </div>
-        </article>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="pb-5">
+{# =========================================================== 1. Первый экран #}
+<section class="hero" aria-labelledby="hero-title">
   <div class="container">
-    <div class="row g-5 align-items-start">
-      <div class="col-lg-4">
-        <p class="section-label mb-2">До приезда</p>
-        <h2 style="font-size: 2.6rem;">Сначала посмотрите, потом бронируйте</h2>
-      </div>
-      <div class="col-lg-8">
-        <div class="row g-4">
-          <div class="col-md-4">
-            <div class="ritual">
-              <div class="num mb-2">01</div>
-              <h5 class="mb-2">План этажа</h5>
-              <p class="text-muted mb-0">Номер выбирается кликом по 2D-схеме, а не из длинного списка.</p>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="ritual">
-              <div class="num mb-2">02</div>
-              <h5 class="mb-2">3D-тур</h5>
-              <p class="text-muted mb-0">Прогулка внутри комнаты на 360° — свет, мебель, вид из окна.</p>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="ritual">
-              <div class="num mb-2">03</div>
-              <h5 class="mb-2">Бронь</h5>
-              <p class="text-muted mb-0">Даты и гости — на карточке номера. Отмена за сутки бесплатно.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="quote-band py-5">
-  <div class="container py-lg-3">
-    <blockquote class="mb-4">«Мы не продаём фотографии. Гость видит комнату так, как увидит её вечером в день заезда.»</blockquote>
-    <p class="mb-0" style="letter-spacing: 0.16em; text-transform: uppercase; font-size: 0.75rem; color: var(--gold);">Ресепшн Aurelio · 24/7</p>
-  </div>
-</section>
-
-<section id="visit" class="py-5">
-  <div class="container py-lg-3">
-    <div class="row g-4">
-      <div class="col-lg-5">
-        <p class="section-label mb-2">Визит</p>
-        <h2 class="mb-3" style="font-size: 2.8rem;">Как добраться и когда заезжать</h2>
-        <p class="text-muted">Отель в центре Ташкента. Трансфер из аэропорта заказывайте у ресепшн за сутки — встретим с табличкой.</p>
-        <a href="{% url 'rooms:hotel_floors' %}" class="btn btn-ink mt-2">Перейти к номерам</a>
-      </div>
+    <div class="row g-4 g-lg-5 align-items-stretch">
       <div class="col-lg-7">
-        <div class="visit-panel p-4 p-md-5">
-          <div class="visit-line"><span>Адрес</span><strong>Ташкент, ул. Примерная, 1</strong></div>
-          <div class="visit-line"><span>Телефон</span><strong>+998 (90) 000-00-00</strong></div>
-          <div class="visit-line"><span>Почта</span><strong>info@aureliohotel.uz</strong></div>
-          <div class="visit-line"><span>Заезд</span><strong>с 14:00</strong></div>
-          <div class="visit-line" style="border-bottom: none;"><span>Выезд</span><strong>до 12:00</strong></div>
+        <h1 id="hero-title" class="hero-title">Номер в центре Ташкента,<br class="d-none d-md-inline"> который вы увидите<br class="d-none d-md-inline"> до&nbsp;заезда</h1>
+        <p class="hero-sub">Найдите номер на плане этажа, пройдите по нему в 3D и забронируйте за пару минут. Оплата при заселении.</p>
+
+        <form method="get" action="{% url 'rooms:room_search' %}" class="search-card" novalidate aria-label="Поиск свободных номеров">
+          <div class="row g-2">
+            <div class="col-6 col-md-5">
+              <label class="form-label" for="{{ search_form.check_in.id_for_label }}">{{ search_form.check_in.label }}</label>
+              {{ search_form.check_in }}
+            </div>
+            <div class="col-6 col-md-5">
+              <label class="form-label" for="{{ search_form.check_out.id_for_label }}">{{ search_form.check_out.label }}</label>
+              {{ search_form.check_out }}
+            </div>
+            <div class="col-12 col-md-2">
+              <label class="form-label" for="{{ search_form.guests.id_for_label }}">{{ search_form.guests.label }}</label>
+              {{ search_form.guests }}
+            </div>
+            <div class="col-12 pt-2">
+              <button type="submit" class="btn btn-copper">Показать свободные номера</button>
+            </div>
+          </div>
+        </form>
+
+        <div class="proof">
+          <span><i class="ph ph-door-open"></i><span><strong>{{ free_today_count }} из {{ total_rooms }}</strong> номеров свободны сегодня</span></span>
+          <span><i class="ph ph-tag"></i><span>от <strong>${{ min_price|floatformat:0 }}</strong> за ночь</span></span>
+          {% if avg_rating %}
+            <span><i class="ph-fill ph-star"></i><span><strong>{{ avg_rating|floatformat:1 }}</strong> из 5 по {{ reviews_count }} отзывам</span></span>
+          {% else %}
+            <span><i class="ph ph-shield-check"></i><span>бесплатная отмена за 24 часа</span></span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-lg-5 d-none d-lg-block">
+        <img class="hero-photo" src="{% static 'img/hero-room.jpg' %}" alt="Номер Aurelio Hotel: двуспальная кровать и окно во внутренний двор" fetchpriority="high">
+      </div>
+    </div>
+  </div>
+</section>
+
+{# =========================================================== 2. Проблема → решение #}
+<section data-reveal aria-labelledby="problem-title">
+  <div class="container">
+    <div class="problem">
+      <div class="row g-4 align-items-center">
+        <div class="col-lg-5">
+          <h2 id="problem-title" class="mb-0">По фото в каталогах не понять, где окажется ваш номер</h2>
+        </div>
+        <div class="col-lg-7">
+          <p>Широкоугольные снимки делают комнату больше, а ретушь убирает вид на парковку. У нас номер можно найти на плане этажа, рассмотреть его 3D модель и сразу увидеть цену за все ночи. Вы бронируете то, что видели.</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
+{# =========================================================== 3. Преимущества #}
+<section class="section" data-reveal aria-labelledby="benefits-title">
+  <div class="container">
+    <div class="section-head">
+      <h2 id="benefits-title">Что вы знаете о номере ещё до брони</h2>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-6 col-lg-3">
+        <article class="benefit">
+          <span class="icon"><i class="ph ph-map-trifold"></i></span>
+          <h3>Где он находится</h3>
+          <p>На плане этажа видно соседние номера, лифт, лестницу и куда выходят окна.</p>
+        </article>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <article class="benefit">
+          <span class="icon"><i class="ph ph-cube"></i></span>
+          <h3>Как он выглядит</h3>
+          <p>3D модель номера можно вращать и приближать прямо в браузере, без&nbsp;приложений.</p>
+        </article>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <article class="benefit">
+          <span class="icon"><i class="ph ph-calculator"></i></span>
+          <h3>Сколько он стоит</h3>
+          <p>Сайт считает каждую ночь по своему тарифу, включая сезонные, и показывает итог до отправки заявки.</p>
+        </article>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <article class="benefit">
+          <span class="icon"><i class="ph ph-shield-check"></i></span>
+          <h3>Чем вы рискуете</h3>
+          <p>Ничем. Предоплаты нет, а отменить бронь можно бесплатно за 24 часа до заезда.</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# =========================================================== 4. Номера #}
+<section class="section pt-0" data-reveal aria-labelledby="rooms-title">
+  <div class="container">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3" style="margin-bottom: 32px;">
+      <div class="section-head mb-0">
+        <h2 id="rooms-title">Номера</h2>
+        <p>Цена за ночь по базовому тарифу. Итог на ваши даты покажет поиск.</p>
+      </div>
+      <a href="{% url 'rooms:hotel_floors' %}" class="btn btn-outline-copper btn-sm">Открыть схему этажей</a>
+    </div>
+
+    {% if featured_rooms %}
+      <div class="row g-3">
+        {% for room in featured_rooms %}
+          <div class="col-md-6 col-lg-4">
+            <article class="room-card media-zoom">
+              {% if room.image %}
+                <div class="room-thumb"><img src="{{ room.image.url }}" alt="{{ room.title }}, номер {{ room.display_number }}" loading="lazy"></div>
+              {% endif %}
+              <div class="room-body">
+                <h3><a href="{% url 'rooms:room_detail' room.pk %}">{{ room.title }}</a></h3>
+                <p class="room-meta">
+                  Номер {{ room.display_number }}{% if room.floor %} · {{ room.floor.title }}{% endif %} · до {{ room.capacity }} гостей{% if room.avg_rating %} · <i class="ph-fill ph-star" style="color:#b88a1e;"></i> {{ room.avg_rating|floatformat:1 }}{% endif %}
+                </p>
+                <div class="mt-auto d-flex justify-content-between align-items-center">
+                  <span><span class="room-price">${{ room.price_per_night|floatformat:0 }}</span> <span class="text-muted small">за ночь</span></span>
+                  <span class="room-more" aria-hidden="true">Смотреть номер <i class="ph ph-arrow-right"></i></span>
+                </div>
+              </div>
+            </article>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <i class="ph ph-bed"></i>
+        <h3 class="mt-2 mb-0">Номера ещё не добавлены</h3>
+        <p>Администратор может добавить первый номер в панели управления: название, цену, фото и место на плане этажа.</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{# =========================================================== 5. Крупная фраза #}
+<section class="tagline" aria-label="Главная идея отеля">
+  <div class="container">
+    <p class="tagline-text" data-words>Вы выбираете номер так же,<br> как выбирали бы его<br class="d-none d-md-inline"> на&nbsp;месте.</p>
+  </div>
+</section>
+
+{# =========================================================== 6. Как забронировать #}
+<section class="section pt-0" data-reveal aria-labelledby="steps-title">
+  <div class="container">
+    <div class="section-head">
+      <h2 id="steps-title">Бронь за три шага</h2>
+      <p>Регистрация не нужна. Код брони появляется сразу после отправки.</p>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="step">
+          <span class="num">1</span>
+          <h3>Укажите даты</h3>
+          <p>Сайт покажет только свободные номера и посчитает цену за весь срок.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="step">
+          <span class="num">2</span>
+          <h3>Посмотрите номер</h3>
+          <p>Найдите его на плане этажа и рассмотрите 3D модель, прежде чем решать.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="step">
+          <span class="num">3</span>
+          <h3>Оставьте контакты</h3>
+          <p>Имя, почта и телефон. Администратор подтвердит бронь в течение 15 минут.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# =========================================================== 7. Что входит в проживание #}
+<section class="section pt-0" data-reveal aria-labelledby="included-title">
+  <div class="container">
+    <div class="section-head">
+      <h2 id="included-title">Что входит в проживание</h2>
+      <p>Завтрак включён в цену. Остальное доступно гостям по запросу на ресепшн.</p>
+    </div>
+    <div class="row g-3">
+      <div class="col-sm-6 col-lg-3">
+        <article class="feature media-zoom">
+          <img src="{% static 'img/breakfast.jpg' %}" alt="Завтрак: яичница, тосты и овощи" loading="lazy">
+          <div class="feature-body">
+            <h3>Завтрак включён</h3>
+            <p>Шведский стол с 7:00 до 10:30 для всех гостей.</p>
+          </div>
+        </article>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <article class="feature media-zoom">
+          <img src="{% static 'img/restaurant.jpg' %}" alt="Сервированный стол в ресторане отеля" loading="lazy">
+          <div class="feature-body">
+            <h3>Ресторан</h3>
+            <p>Узбекская и европейская кухня, ужин с 18:00 до 23:00.</p>
+          </div>
+        </article>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <article class="feature media-zoom">
+          <img src="{% static 'img/spa.jpg' %}" alt="Массаж в спа отеля" loading="lazy">
+          <div class="feature-body">
+            <h3>Спа и массаж</h3>
+            <p>Сауна, хаммам и массаж по предварительной записи.</p>
+          </div>
+        </article>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <article class="feature media-zoom">
+          <img src="{% static 'img/pool.jpg' %}" alt="Бассейн во внутреннем дворе вечером" loading="lazy">
+          <div class="feature-body">
+            <h3>Бассейн во дворе</h3>
+            <p>Открыт с мая по сентябрь, с 8:00 до 22:00.</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# =========================================================== 8. Отзывы: только настоящие, из базы #}
+{% if latest_reviews %}
+<section class="section pt-0" data-reveal aria-labelledby="reviews-title">
+  <div class="container">
+    <div class="section-head">
+      <h2 id="reviews-title">Что пишут гости</h2>
+      {% if avg_rating %}<p>Средняя оценка {{ avg_rating|floatformat:1 }} из 5 по {{ reviews_count }} отзывам после проживания.</p>{% endif %}
+    </div>
+    <div class="row g-3">
+      {% for review in latest_reviews %}
+        <div class="col-md-4">
+          <figure class="review-card m-0">
+            <span class="stars" role="img" aria-label="Оценка {{ review.rating }} из 5">{% for i in "12345" %}<i class="{% if forloop.counter <= review.rating %}ph-fill{% else %}ph{% endif %} ph-star"></i>{% endfor %}</span>
+            <blockquote>{{ review.comment|truncatewords:40 }}</blockquote>
+            <figcaption class="who">
+              <strong>{{ review.user.get_full_name|default:review.user.username }}</strong>
+              {{ review.room.title }} · {{ review.created_at|date:"F Y" }}
+            </figcaption>
+          </figure>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# =========================================================== 9. Вопросы и ответы #}
+<section id="faq" class="section pt-0" data-reveal aria-labelledby="faq-title">
+  <div class="container">
+    <div class="section-head">
+      <h2 id="faq-title">Вопросы и ответы</h2>
+      <p>Не нашли ответ? Позвоните на ресепшн, он работает круглосуточно.</p>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>Во сколько заезд и выезд?<i class="ph ph-plus" aria-hidden="true"></i></summary>
+        <div class="answer">Заезд с 14:00, выезд до 12:00. Ранний заезд или поздний выезд возможен, если номер свободен: предупредите ресепшн за сутки.</div>
+      </details>
+      <details>
+        <summary>Нужно ли платить заранее?<i class="ph ph-plus" aria-hidden="true"></i></summary>
+        <div class="answer">Нет. Проживание оплачивается при заселении наличными или картой Uzcard, Humo, Visa или Mastercard.</div>
+      </details>
+      <details>
+        <summary>Как отменить бронь?<i class="ph ph-plus" aria-hidden="true"></i></summary>
+        <div class="answer">Откройте страницу брони по коду и почте и нажмите «Отменить». Это бесплатно, если до заезда больше 24 часов. Можно отменить и по телефону.</div>
+      </details>
+      <details>
+        <summary>Завтрак входит в цену?<i class="ph ph-plus" aria-hidden="true"></i></summary>
+        <div class="answer">Да, для всех гостей номера. Шведский стол работает с 7:00 до 10:30.</div>
+      </details>
+      <details>
+        <summary>Как посмотреть номер в 3D?<i class="ph ph-plus" aria-hidden="true"></i></summary>
+        <div class="answer">Откройте карточку номера. Модель загрузится на первой вкладке: вращайте её мышью или пальцем, колесом мыши можно приблизить.</div>
+      </details>
+      <details>
+        <summary>Можно ли заселиться с ребёнком?<i class="ph ph-plus" aria-hidden="true"></i></summary>
+        <div class="answer">Да. Дети до 6 лет проживают бесплатно без дополнительного места. Укажите ребёнка в числе гостей, если ему нужна отдельная кровать.</div>
+      </details>
+      <details>
+        <summary>Есть ли парковка?<i class="ph ph-plus" aria-hidden="true"></i></summary>
+        <div class="answer">Да, подземная парковка отеля бесплатна для гостей. Её план есть на схеме этажей.</div>
+      </details>
+      <details>
+        <summary>Встретите ли вы меня в аэропорту?<i class="ph ph-plus" aria-hidden="true"></i></summary>
+        <div class="answer">Да, трансфер из аэропорта Ташкента стоит $18 в одну сторону. Закажите его на ресепшн не позже чем за сутки и укажите номер рейса.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+{# =========================================================== 10. Финальный призыв #}
+<section id="contacts" data-reveal aria-labelledby="final-title">
+  <div class="container">
+    <div class="final">
+      <div class="row g-4 align-items-center">
+        <div class="col-lg-7">
+          <h2 id="final-title">Выберите номер на свои даты</h2>
+          <p>Посмотрите, что свободно, и забронируйте без предоплаты. Если планы изменятся, отмена бесплатна.</p>
+          <ul class="guarantees">
+            <li><i class="ph ph-check"></i>Оплата при заселении</li>
+            <li><i class="ph ph-check"></i>Отмена за 24 часа бесплатно</li>
+            <li><i class="ph ph-check"></i>Подтверждение за 15 минут</li>
+          </ul>
+          <a href="{% url 'rooms:room_search' %}" class="btn btn-copper btn-lg">Показать свободные номера</a>
+        </div>
+        <div class="col-lg-5">
+          <div class="contact-card">
+            <dl>
+              <dt>Адрес</dt><dd>Ташкент, ул. Примерная, 1</dd>
+              <dt>Телефон</dt><dd><a href="tel:+998900000000">+998 (90) 000 00 00</a></dd>
+              <dt>Почта</dt><dd><a href="mailto:info@aureliohotel.uz">info@aureliohotel.uz</a></dd>
+              <dt>Ресепшн</dt><dd>круглосуточно</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "Во сколько заезд и выезд?", "acceptedAnswer": {"@type": "Answer", "text": "Заезд с 14:00, выезд до 12:00. Ранний заезд или поздний выезд возможен, если номер свободен."}},
+    {"@type": "Question", "name": "Нужно ли платить заранее?", "acceptedAnswer": {"@type": "Answer", "text": "Нет. Проживание оплачивается при заселении наличными или картой Uzcard, Humo, Visa или Mastercard."}},
+    {"@type": "Question", "name": "Как отменить бронь?", "acceptedAnswer": {"@type": "Answer", "text": "На странице брони по коду и почте или по телефону. Бесплатно, если до заезда больше 24 часов."}},
+    {"@type": "Question", "name": "Завтрак входит в цену?", "acceptedAnswer": {"@type": "Answer", "text": "Да, для всех гостей номера. Шведский стол с 7:00 до 10:30."}},
+    {"@type": "Question", "name": "Как посмотреть номер в 3D?", "acceptedAnswer": {"@type": "Answer", "text": "Откройте карточку номера: 3D модель загрузится на первой вкладке."}},
+    {"@type": "Question", "name": "Можно ли заселиться с ребёнком?", "acceptedAnswer": {"@type": "Answer", "text": "Да. Дети до 6 лет проживают бесплатно без дополнительного места."}},
+    {"@type": "Question", "name": "Есть ли парковка?", "acceptedAnswer": {"@type": "Answer", "text": "Да, подземная парковка бесплатна для гостей."}},
+    {"@type": "Question", "name": "Встретите ли вы меня в аэропорту?", "acceptedAnswer": {"@type": "Answer", "text": "Да, трансфер из аэропорта стоит $18 в одну сторону, заказ за сутки."}}
+  ]
+}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  /* Крупная фраза: слова проявляются по одному, когда пересекают линию на 65% высоты экрана.
+     Прокрутка обрабатывается не чаще раза за кадр (requestAnimationFrame). */
+  (function () {
+    var el = document.querySelector('[data-words]');
+    if (!el) return;
+    Array.prototype.slice.call(el.childNodes).forEach(function (node) {
+      if (node.nodeType !== 3) return;
+      var frag = document.createDocumentFragment();
+      node.textContent.split(/(\s+)/).forEach(function (part) {
+        if (!part) return;
+        if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+        var span = document.createElement('span');
+        span.className = 'w';
+        span.textContent = part;
+        frag.appendChild(span);
+      });
+      node.parentNode.replaceChild(frag, node);
+    });
+    var words = Array.prototype.slice.call(el.querySelectorAll('.w'));
+    var lit = 0;
+    var ticking = false;
+
+    // Слова одной строки пересекают линию одновременно, поэтому считаем прогресс:
+    // абзац проходит от 80% до 35% высоты экрана, и на каждом отрезке загорается следующее слово.
+    function update() {
+      ticking = false;
+      var vh = window.innerHeight;
+      var top = el.getBoundingClientRect().top;
+      var progress = (vh * 0.8 - top) / (vh * 0.45);
+      var target = Math.max(0, Math.min(words.length, Math.ceil(progress * words.length)));
+      while (lit < target) { words[lit].classList.add('on'); lit++; }
+      if (lit >= words.length) window.removeEventListener('scroll', onScroll);
+    }
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('beforeprint', function () { words.forEach(function (w) { w.classList.add('on'); }); });
+    update();
+  })();
+</script>
 {% endblock %}

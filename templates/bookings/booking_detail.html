@@ -64,18 +64,20 @@
         {% endif %}
       </div>
 
+      {% include 'bookings/_telegram_card.html' %}
+
       <div class="panel-card mb-4">
         <div class="panel-title">Перед приездом</div>
         <ul class="list-unstyled small mb-0 d-flex flex-column gap-2">
-          <li><i class="bi bi-clock me-2" style="color: var(--gold);"></i>Заезд с 14:00, выезд до 12:00</li>
-          <li><i class="bi bi-telephone me-2" style="color: var(--gold);"></i>+998 (90) 000-00-00</li>
-          <li><i class="bi bi-envelope me-2" style="color: var(--gold);"></i>info@aureliohotel.uz</li>
-          <li><i class="bi bi-geo-alt me-2" style="color: var(--gold);"></i>Ташкент, ул. Примерная, 1</li>
+          <li><i class="ph ph-clock me-2" style="color: var(--muted);"></i>Заезд с 14:00, выезд до 12:00</li>
+          <li><i class="ph ph-phone me-2" style="color: var(--muted);"></i>+998 (90) 000-00-00</li>
+          <li><i class="ph ph-envelope-simple me-2" style="color: var(--muted);"></i>info@aureliohotel.uz</li>
+          <li><i class="ph ph-map-pin me-2" style="color: var(--muted);"></i>Ташкент, ул. Примерная, 1</li>
         </ul>
       </div>
 
       {% if booking.room.homebyme_embed_url or booking.room.model_3d %}
-        <a href="{% url 'rooms:room_detail' booking.room.pk %}" class="btn btn-copper w-100">Посмотреть 3D-тур номера</a>
+        <a href="{% url 'rooms:room_detail' booking.room.pk %}" class="btn btn-copper w-100">Посмотреть тур в 3D номера</a>
       {% endif %}
     </div>
   </div>

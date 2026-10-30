@@ -150,7 +150,7 @@ def add_review(request, pk):
                 'is_published': True,
             },
         )
-        messages.success(request, "Спасибо за отзыв!")
+        messages.success(request, "Отзыв опубликован. Спасибо, что поделились.")
     else:
         messages.error(request, "Не удалось сохранить отзыв: заполните оценку и текст.")
     return redirect('rooms:room_detail', pk=room.pk)

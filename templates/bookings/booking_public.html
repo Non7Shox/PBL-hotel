@@ -31,9 +31,9 @@
       <div class="panel-card">
         <div class="panel-title">Вы можете попросить</div>
         <ul class="list-unstyled small mb-0 d-flex flex-column gap-2">
-          <li><i class="bi bi-telephone me-2" style="color: var(--gold);"></i>+998 (90) 000-00-00</li>
-          <li><i class="bi bi-envelope me-2" style="color: var(--gold);"></i>info@aureliohotel.uz</li>
-          <li><i class="bi bi-whatsapp me-2" style="color: var(--gold);"></i>Yahoo Chats</li>
+          <li><i class="ph ph-phone me-2" style="color: var(--muted);"></i>+998 (90) 000-00-00</li>
+          <li><i class="ph ph-envelope-simple me-2" style="color: var(--muted);"></i>info@aureliohotel.uz</li>
+          <li><i class="ph ph-clock me-2" style="color: var(--muted);"></i>Ресепшн работает круглосуточно</li>
         </ul>
       </div>
     </div>
@@ -42,7 +42,7 @@
       {% if booking.room.homebyme_embed_url or booking.room.model_3d %}
         <div class="panel-card">
           <div class="panel-title">Окружение номера</div>
-          <a href="{% url 'rooms:room_detail' booking.room.pk %}" class="btn btn-copper w-100">Посмотреть 3D-тур</a>
+          <a href="{% url 'rooms:room_detail' booking.room.pk %}" class="btn btn-copper w-100">Посмотреть тур в 3D</a>
         </div>
       {% else %}
         <div class="panel-card">

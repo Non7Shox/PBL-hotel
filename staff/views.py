@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from bookings.emails import notify_booking_created, notify_booking_status
+from bookings import notify
 from bookings.models import Booking
 from rooms.models import Floor, Room
 
@@ -68,8 +68,9 @@ def dashboard(request):
             'in_house': in_house.count(),
             'pending': bookings.filter(status=Booking.STATUS_PENDING).count(),
             'free_tonight': Room.objects.filter(is_active=True)
-            .exclude(bookings__status__in=Booking.ACTIVE_STATUSES)
-            .distinct()
+            .exclude(pk__in=bookings.filter(
+                status__in=Booking.ACTIVE_STATUSES, check_in__lt=tomorrow, check_out__gt=today,
+            ).values('room_id'))
             .count(),
         },
         'occupancy': _occupancy(bookings, today, tomorrow),
@@ -122,7 +123,7 @@ def desk_booking(request):
     form = DeskBookingForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         booking = form.save()
-        notify_booking_created(booking)
+        notify.booking_created(booking)
         messages.success(request, f"Бронь {booking.code} создана на стойке.")
         return redirect('bookings:booking_detail', code=booking.code)
 
@@ -143,7 +144,7 @@ def booking_action(request, pk, action):
     except ValidationError as error:
         messages.error(request, error.messages[0])
     else:
-        notify_booking_status(booking)
+        notify.status_changed(booking, actor=request.user.get_full_name() or request.user.username)
         messages.success(request, f"{booking.code}: {booking.get_status_display()}")
 
     next_url = request.POST.get('next') or request.META.get('HTTP_REFERER')

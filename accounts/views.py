@@ -47,7 +47,7 @@ def signup(request):
     if request.method == 'POST' and form.is_valid():
         user = form.save()
         login(request, user)
-        messages.success(request, "Аккаунт создан. Добро пожаловать в Aurelio Hotel!")
+        messages.success(request, "Аккаунт создан. Теперь ваши брони сохраняются в личном кабинете.")
         return redirect('bookings:my_bookings')
 
     return render(request, 'accounts/signup.html', {'form': form})

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block extra_style %}
+  .legal{
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  .legal .back{ display: inline-flex; align-items: center; gap: 4px; font-size: 14px; line-height: 20px; color: var(--muted); }
+  .legal .updated{ color: var(--muted); font-size: 14px; line-height: 20px; }
+  .legal h2{ font-size: 20px; line-height: 28px; margin: 40px 0 8px; }
+  .legal p, .legal li{ color: var(--ink-soft); }
+  .legal ul{ padding-left: 24px; }
+  .legal li + li{ margin-top: 8px; }
+{% endblock %}
+
+{% block content %}
+<article class="container">
+  <div class="legal page-band">
+    <a class="back" href="{% url 'rooms:room_list' %}"><i class="ph ph-arrow-left"></i>На главную</a>
+    <h1 class="mt-3">{% block legal_title %}{% endblock %}</h1>
+    <p class="updated">{% block legal_updated %}{% endblock %}</p>
+    {% block legal_body %}{% endblock %}
+  </div>
+</article>
+{% endblock %}

@@ -12,20 +12,41 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Локальные секреты (токен бота и т. п.) можно держать в файле .env рядом с manage.py:
+# строки вида KEY=VALUE. Файл в .gitignore; переменные окружения имеют приоритет.
+_env_file = BASE_DIR / '.env'
+if _env_file.exists():
+    for _line in _env_file.read_text(encoding='utf-8').splitlines():
+        _line = _line.strip()
+        if _line and not _line.startswith('#') and '=' in _line:
+            _key, _value = _line.split('=', 1)
+            os.environ.setdefault(_key.strip(), _value.strip().strip('"').strip("'"))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-he0t%t^$rga@zb+ku_&k4p!&jo*#+3sszhibscq(1w$fy_si21'
+# Секреты и режим работы задаются переменными окружения.
+# Для локальной разработки значения по умолчанию подходят как есть;
+# в продакшене обязательно задайте DJANGO_SECRET_KEY и DJANGO_DEBUG=False.
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in ('1', 'true', 'yes')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    if not DEBUG:
+        raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set when DEBUG is off.")
+    SECRET_KEY = 'django-insecure-local-development-only'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+    if host.strip()
+]
 
 
 # Application definition
@@ -41,6 +62,7 @@ INSTALLED_APPS = [
     'bookings.apps.BookingsConfig',
     'accounts.apps.AccountsConfig',
     'staff.apps.StaffConfig',
+    'telegram_bot.apps.TelegramBotConfig',
 ]
 
 MIDDLEWARE = [
@@ -129,6 +151,8 @@ LOGOUT_REDIRECT_URL = 'rooms:room_list'
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 
 # Email
@@ -150,5 +174,14 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 HOTEL_NOTIFY_EMAIL = 'reception@aureliohotel.uz'
 HOTEL_CURRENCY = '$'
 
+# Адрес сайта для ссылок в письмах и сообщениях бота
+SITE_URL = os.environ.get('DJANGO_SITE_URL', 'http://127.0.0.1:8001')
+
+# Telegram-бот (см. README, раздел «Telegram-бот»). Без токена бот просто выключен.
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+TELEGRAM_BOT_USERNAME = os.environ.get('TELEGRAM_BOT_USERNAME', '').lstrip('@')
+TELEGRAM_STAFF_CHAT_ID = os.environ.get('TELEGRAM_STAFF_CHAT_ID', '')
+TELEGRAM_DIGEST_HOUR = int(os.environ.get('TELEGRAM_DIGEST_HOUR', '8'))
+
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = BASE_DIR / 'media'

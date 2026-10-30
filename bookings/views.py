@@ -11,7 +11,9 @@ from django.views.decorators.http import require_POST
 from rooms.models import Room
 from staff.decorators import is_staff_member
 
-from .emails import notify_booking_created, notify_booking_status
+from telegram_bot.guest import telegram_link
+
+from . import notify
 from .forms import BookingForm, BookingLookupForm
 from .models import Booking
 
@@ -66,8 +68,8 @@ def booking_create(request, pk):
     if request.method == 'POST' and form.is_valid():
         booking = form.save()
         _remember_booking(request, booking)
-        notify_booking_created(booking)
-        messages.success(request, f"Заявка принята! Код вашей брони — {booking.code}.")
+        notify.booking_created(booking)
+        messages.success(request, f"Заявка принята. Код брони: {booking.code}.")
         return redirect('bookings:booking_success', code=booking.code)
 
     context = {
@@ -82,7 +84,11 @@ def booking_create(request, pk):
 def booking_success(request, code):
     """Страница подтверждения: код брони, детали, следующие шаги."""
     booking = _get_booking_or_none(request, code) or get_object_or_404(Booking, code=code.upper())
-    return render(request, 'bookings/booking_success.html', {'booking': booking, 'currency': CURRENCY})
+    return render(request, 'bookings/booking_success.html', {
+        'booking': booking,
+        'currency': CURRENCY,
+        'telegram_link': telegram_link(booking),
+    })
 
 
 def booking_detail(request, code):
@@ -100,6 +106,7 @@ def booking_detail(request, code):
         'booking': booking,
         'history': history,
         'can_cancel': booking.is_cancellable,
+        'telegram_link': telegram_link(booking),
         'currency': CURRENCY,
     }
     return render(request, 'bookings/booking_detail.html', context)
@@ -118,7 +125,7 @@ def booking_cancel(request, code):
         return redirect('bookings:booking_detail', code=booking.code)
 
     booking.cancel()
-    notify_booking_status(booking)
+    notify.status_changed(booking, actor="гость на сайте")
     messages.info(request, f"Бронь {booking.code} отменена.")
     return redirect('bookings:booking_detail', code=booking.code)
 

@@ -22,7 +22,7 @@ class Amenity(models.Model):
         max_length=100, 
         blank=True, 
         verbose_name="Иконка (CSS класс)", 
-        help_text="Например: fa-solid fa-wifi"
+        help_text="Класс иконки Phosphor, например: ph ph-wifi-high"
     )
 
     class Meta:
@@ -63,6 +63,13 @@ class Room(models.Model):
 
     homebyme_embed_url = models.URLField(blank=True, null=True, verbose_name="Ссылка на 3D-тур HomeByMe")
     model_3d = models.FileField(upload_to='rooms_3d/', blank=True, null=True, verbose_name="3D-модель номера (.glb)")
+    model_camera_orbit = models.CharField(
+        max_length=60,
+        blank=True,
+        verbose_name="Начальный ракурс 3D модели",
+        help_text="Формат model-viewer: «поворот наклон расстояние», например: 90deg 55deg auto. "
+                  "Если задан, модель не вращается сама. Пусто — ракурс по умолчанию.",
+    )
     x_pos = models.IntegerField(default=50, verbose_name="Позиция X (%)")
     y_pos = models.IntegerField(default=50, verbose_name="Позиция Y (%)")
     is_active = models.BooleanField(default=True, verbose_name="Доступен для бронирования")
@@ -81,6 +88,11 @@ class Room(models.Model):
     @property
     def display_number(self):
         return self.room_number or f"{self.pk:03d}"
+
+    @property
+    def has_generated_model(self):
+        """Модель создана командой generate_room_models: номер в разрезе без передней стены."""
+        return bool(self.model_3d) and self.model_3d.name.startswith('rooms_3d/room-')
 
     @property
     def is_bookable(self):

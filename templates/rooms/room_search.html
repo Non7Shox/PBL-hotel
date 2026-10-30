@@ -38,7 +38,7 @@
         {{ form.max_price }}
       </div>
       <div class="col-12 d-flex flex-wrap gap-3">
-        <button type="submit" class="btn btn-copper px-4">Показать номера</button>
+        <button type="submit" class="btn btn-copper px-4">Показать свободные номера</button>
         <a href="{% url 'rooms:hotel_floors' %}" class="btn btn-outline-copper px-4">Схема этажей</a>
       </div>
     </form>
@@ -52,10 +52,15 @@
     </div>
 
     {% if results %}
-      <div class="row g-4">
+      <div class="row g-4" data-reveal>
         {% for room in results %}
           <div class="col-md-6 col-lg-4">
-            <div class="panel-card h-100 d-flex flex-column">
+            <div class="panel-card h-100 d-flex flex-column p-0 media-zoom">
+              {% if room.image %}
+                <img src="{{ room.image.url }}" alt="{{ room.title }}" loading="lazy"
+                     style="width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-bottom: 1px solid var(--line);">
+              {% endif %}
+              <div class="p-3 pb-4 d-flex flex-column flex-grow-1">
               <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                 <h5 class="mb-0">{{ room.title }}</h5>
                 {% if room.is_free %}
@@ -72,15 +77,25 @@
                   <a href="{% url 'bookings:booking_create' room.pk %}" class="btn btn-copper btn-sm flex-fill">Забронировать</a>
                 {% endif %}
               </div>
+              </div>
             </div>
           </div>
         {% endfor %}
       </div>
     {% else %}
-      <div class="panel-card"><p class="mb-0 text-muted">Ничего не найдено. Попробуйте другие даты или уберите лимит цены.</p></div>
+      <div class="panel-card text-center py-5">
+        <i class="ph ph-calendar-x" style="font-size: 30px; color: var(--muted);"></i>
+        <h2 class="h4 mt-2 mb-1">На эти даты свободных номеров нет</h2>
+        <p class="text-muted mb-4">Сдвиньте даты на день или уберите ограничение по цене. Можно также позвонить на ресепшн: иногда номер освобождается после отмены.</p>
+        <a href="{% url 'rooms:room_search' %}" class="btn btn-outline-copper btn-sm">Сбросить фильтры</a>
+      </div>
     {% endif %}
   {% else %}
-    <div class="panel-card"><p class="mb-0 text-muted">Заполните даты выше и нажмите «Показать номера».</p></div>
+    <div class="panel-card text-center py-5">
+      <i class="ph ph-calendar-dots" style="font-size: 30px; color: var(--muted);"></i>
+      <h2 class="h4 mt-2 mb-1">Укажите даты заезда и выезда</h2>
+      <p class="text-muted mb-0">Покажем только свободные номера и посчитаем цену за весь срок с учётом сезонных тарифов.</p>
+    </div>
   {% endif %}
 </div>
 {% endblock %}

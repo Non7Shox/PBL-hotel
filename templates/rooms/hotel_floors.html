@@ -1,155 +1,92 @@
 {% extends 'base.html' %}
 
-{% block title %}2D-Схема этажей — Aurelio Hotel{% endblock %}
+{% block title %}Схема этажей — Aurelio Hotel{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* ===== Заголовок страницы ===== */
-    .page-header-band{
-        background: linear-gradient(135deg, var(--gh-ink) 0%, #2a2318 100%);
+    .projection-container{
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 24px;
+    }
+
+    .floor-switcher .switcher-label{ color: var(--muted); font-size: 14px; line-height: 20px; }
+
+    .projection-viewport{
         position: relative;
-        overflow: hidden;
-        border-radius: 0 0 32px 32px;
-        padding-top: 7.5rem !important;
-    }
-
-    .page-header-band::before{
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(circle at 85% 0%, rgba(181,101,45,0.30), transparent 55%);
-    }
-
-    .page-header-band h2{ color: #fff; }
-    .page-header-band p{ color: rgba(255,255,255,0.65); }
-
-    /* Главный контейнер проекции */
-    .projection-container {
-        background: #0f0d0a;
-        border-radius: 22px;
-        padding: 22px;
-        box-shadow: 0 25px 55px rgba(27,23,16,0.35);
-        border: 1px solid rgba(255,255,255,0.06);
-        max-width: 820px;
-        margin: -70px auto 0;
-        position: relative;
-        z-index: 3;
-    }
-
-    /* Панель переключателя этажей */
-    .floor-switcher{
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 16px;
-        padding: 0.9rem 1.1rem;
-    }
-
-    .floor-switcher .switcher-label{
-        color: rgba(255,255,255,0.55);
-        font-size: 0.78rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        font-weight: 700;
-    }
-
-    /* Рамка строго под размер изображения */
-    .projection-viewport {
-        position: relative;
-        border-radius: 14px;
-        overflow: hidden;
-        background: #000;
-        padding: 10px;
-        border: 1px solid rgba(255,255,255,0.06);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        background: #fbfbfa;
+        padding: 12px;
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-top: 1rem;
+        margin-top: 16px;
     }
 
-    .projection-card {
-        position: relative;
-        display: inline-block;
-        width: 100%;
-        text-align: center;
-    }
+    .projection-card{ position: relative; display: inline-block; width: 100%; text-align: center; }
 
-    .projection-img {
+    .projection-img{
         width: 100%;
-        max-width: 750px;
+        max-width: 860px;
         height: auto;
         display: block;
         margin: 0 auto;
-        border-radius: 10px;
-        image-rendering: -webkit-optimize-contrast;
-        filter: contrast(105%) brightness(102%);
     }
 
-    /* Кнопки меток номеров */
-    .hotspot-btn {
+    .hotspot-btn{
         transform: translate(-50%, -50%);
-        font-weight: 700;
-        font-size: 0.8rem;
-        padding: 6px 14px;
-        border-radius: 999px;
-        background: linear-gradient(135deg, var(--gh-copper-light), var(--gh-copper));
-        border: 2px solid rgba(255,255,255,0.9);
+        font-weight: 500;
+        font-size: 12px;
+        line-height: 16px;
+        padding: 4px 8px;
+        border-radius: var(--r-md);
+        background: var(--accent);
+        border: 1px solid #fff;
         color: #fff;
-        box-shadow: 0 0 0 4px rgba(181,101,45,0.25), 0 6px 16px rgba(0,0,0,0.4);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.25);
         white-space: nowrap;
+        transition: transform var(--dur-color) var(--ease), background-color var(--dur-color) var(--ease);
     }
+    /* метка стоит по центру точки (translate -50%), нажатие добавляет лёгкое проседание */
+    .hotspot-btn:active{ transform: translate(-50%, -50%) scale(0.98); }
+    .hotspot-btn:hover, .hotspot-btn:focus-visible{ background: var(--accent-hover); color: #fff; z-index: 100 !important; }
 
-    .hotspot-btn:hover {
-        transform: translate(-50%, -50%) scale(1.15);
-        z-index: 100 !important;
-        box-shadow: 0 0 0 6px rgba(181,101,45,0.35), 0 10px 22px rgba(0,0,0,0.5);
-        color: #fff;
+    .floor-btn-pill{
+        border-radius: var(--r-lg) !important;
+        padding: 4px 12px;
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 24px;
+        color: var(--ink-soft) !important;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        margin: 0 8px 8px 0;
     }
-
-    /* Пилюли переключения этажей */
-    .floor-btn-pill {
-        border-radius: 999px !important;
-        padding: 8px 18px;
-        font-weight: 700;
-        font-size: 0.85rem;
-        color: rgba(255,255,255,0.65) !important;
-        border: 1px solid rgba(255,255,255,0.1);
-        margin: 0 4px 4px 0;
-        transition: all .2s ease;
+    .floor-btn-pill{ transition: transform var(--dur-color) var(--ease), background-color var(--dur-color) var(--ease), color var(--dur-color) var(--ease); }
+    .floor-btn-pill:active{ transform: scale(0.98); }
+    @media (hover: hover) and (pointer: fine){
+        .floor-btn-pill:hover{ background: var(--bg); }
     }
-
-    .floor-btn-pill:hover{
-        color: #fff !important;
-        border-color: rgba(255,255,255,0.3);
-    }
-
     .nav-pills .floor-btn-pill.active{
-        background: linear-gradient(135deg, var(--gh-copper-light), var(--gh-copper)) !important;
+        background: var(--ink) !important;
+        border-color: var(--ink);
         color: #fff !important;
-        border-color: transparent;
-        box-shadow: 0 6px 16px rgba(181,101,45,0.35);
     }
 
-    .legend-hint{
-        background: rgba(255,255,255,0.05);
-        border: 1px dashed rgba(255,255,255,0.15);
-        border-radius: 12px;
-        color: rgba(255,255,255,0.55);
-        font-size: 0.85rem;
-    }
+    .legend-hint{ color: var(--muted); font-size: 14px; line-height: 20px; }
 </style>
 {% endblock %}
 
 {% block content %}
 
-<!-- Заголовок раздела -->
-<div class="page-header-band py-5 mb-0">
-    <div class="container position-relative" style="z-index: 1;">
-        <span class="hero-eyebrow mb-3" style="display:inline-flex;"><i class="bi bi-layers-half"></i> Интерактивная навигация</span>
-        <h2 class="fw-bold mt-3 mb-2">Проекция отеля по этажам</h2>
-        <p class="mb-0 pb-4">Выберите этаж и нажмите на номер на схеме, чтобы открыть карточку с 3D-туром.</p>
+<section class="page-band">
+    <div class="container">
+        <h1>Схема этажей</h1>
+        <p>Выберите этаж и нажмите на номер, чтобы открыть его карточку с тур в 3Dом.</p>
     </div>
-</div>
+</section>
 
 {% if floors %}
 <div class="container">
@@ -158,8 +95,8 @@
         <div class="projection-container">
 
             <!-- Панель управления: Переключатель этажей -->
-            <div class="floor-switcher d-flex flex-wrap align-items-center gap-3 mb-1">
-                <span class="switcher-label"><i class="bi bi-building-gear me-1"></i>Этаж</span>
+            <div class="floor-switcher d-flex flex-wrap align-items-center gap-2">
+                <span class="switcher-label">Этаж</span>
                 <ul class="nav nav-pills flex-wrap" id="floorPills" role="tablist">
                     {% for f in floors %}
                         <li class="nav-item" role="presentation">
@@ -194,18 +131,18 @@
                                            style="top: {{ room.y_pos }}%; left: {{ room.x_pos }}%; z-index: 10;"
                                            data-bs-toggle="tooltip"
                                            title="{{ room.title }} — ${{ room.price_per_night }}/ночь">
-                                            <i class="bi bi-door-closed-fill me-1"></i>{{ room.title }}
+                                            {{ room.title }}
                                         </a>
                                     {% endfor %}
                                 {% else %}
-                                    <div class="py-5 text-light text-center">
-                                        <i class="bi bi-image-alt fs-1 text-muted"></i>
+                                    <div class="py-5 text-center text-muted">
+                                        <i class="ph ph-image fs-1 text-muted"></i>
                                         <p class="mt-2 mb-3">Загрузите фото плана для {{ f.number }} этажа в админке.</p>
                                         {% if f.rooms.all %}
                                             <div class="d-flex flex-wrap justify-content-center gap-2 mt-2">
                                                 {% for room in f.rooms.all %}
                                                     <a href="{% url 'rooms:room_detail' room.id %}" class="btn btn-copper btn-sm">
-                                                        <i class="bi bi-door-closed-fill me-1"></i>{{ room.title }}
+                                                        <i class="ph ph-door me-1"></i>{{ room.title }}
                                                     </a>
                                                 {% endfor %}
                                             </div>
@@ -216,8 +153,8 @@
                             </div>
                         </div>
 
-                        <div class="legend-hint mt-3 p-2 px-3 d-inline-flex align-items-center gap-2">
-                            <i class="bi bi-cursor"></i> Нажмите на метку номера, чтобы открыть карточку и 3D-тур
+                        <div class="legend-hint mt-3">
+                            Нажмите на метку номера, чтобы открыть карточку и тур в 3D
                         </div>
 
                     </div>
@@ -230,7 +167,7 @@
 </div>
 {% else %}
 <div class="text-center py-5">
-    <i class="bi bi-layers fs-1 text-muted"></i>
+    <i class="ph ph-stack fs-1 text-muted"></i>
     <h4 class="mt-3 text-muted">Этажи пока не созданы</h4>
     <p class="text-muted">Зайдите в панель администратора и добавьте первый этаж.</p>
 </div>
