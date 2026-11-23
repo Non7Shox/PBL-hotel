@@ -38,13 +38,14 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in ('1', 'true', 'yes')
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 if not SECRET_KEY:
-    if not DEBUG:
-        raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set when DEBUG is off.")
-    SECRET_KEY = 'django-insecure-local-development-only'
+    raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set in the environment or .env file.")
 
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.environ.get('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+    for host in os.environ.get(
+        'DJANGO_ALLOWED_HOSTS',
+        '127.0.0.1,localhost,bookbreinhotel.me,www.bookbreinhotel.me',
+    ).split(',')
     if host.strip()
 ]
 
@@ -157,17 +158,19 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
-
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
-
-# Письма пока печатаются в консоль (MAILERS.default = console).
-# Для реальной отправки замените BACKEND на django.core.mail.backends.smtp.EmailBackend
-# и добавьте HOST/PORT/USER/PASSWORD.
-DEFAULT_FROM_EMAIL = 'Aurelio Hotel <no-reply@aureliohotel.uz>'
+EMAIL_BACKEND = os.environ.get(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend' if DEBUG
+    else 'django.core.mail.backends.smtp.EmailBackend',
+)
+EMAIL_HOST = os.environ.get('EMAIL_HOST', '')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() in ('1', 'true', 'yes')
+EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False').lower() in ('1', 'true', 'yes')
+EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '10'))
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Aurelio Hotel <no-reply@aureliohotel.uz>')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Куда приходят уведомления о новых бронях (почта стойки регистрации)
@@ -175,7 +178,43 @@ HOTEL_NOTIFY_EMAIL = 'reception@aureliohotel.uz'
 HOTEL_CURRENCY = '$'
 
 # Адрес сайта для ссылок в письмах и сообщениях бота
-SITE_URL = os.environ.get('DJANGO_SITE_URL', 'http://127.0.0.1:8001')
+SITE_URL = os.environ.get(
+    'DJANGO_SITE_URL',
+    'https://bookbreinhotel.me' if not DEBUG else 'http://127.0.0.1:8001',
+)
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get(
+        'DJANGO_CSRF_TRUSTED_ORIGINS',
+        'https://bookbreinhotel.me,https://www.bookbreinhotel.me,'
+        'http://127.0.0.1:8000,http://localhost:8000,http://127.0.0.1:8001',
+    ).split(',')
+    if origin.strip()
+]
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_SSL_REDIRECT = os.environ.get(
+    'DJANGO_SECURE_SSL_REDIRECT', 'False',
+).lower() in ('1', 'true', 'yes')
+SECURE_HSTS_SECONDS = int(os.environ.get('DJANGO_SECURE_HSTS_SECONDS', '0'))
+GOOGLE_OAUTH_CLIENT_ID = os.environ.get('GOOGLE_OAUTH_CLIENT_ID', '')
+GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET', '')
+EMAIL_API_TOKEN = os.environ.get('EMAIL_API_TOKEN', '')
+EMAIL_API_URL = os.environ.get('EMAIL_API_URL', '')
+SMS_API_TOKEN = os.environ.get('SMS_API_TOKEN', '')
+SMS_API_URL = os.environ.get('SMS_API_URL', '')
+OTP_TTL_SECONDS = int(os.environ.get('OTP_TTL_SECONDS', '600'))
+OTP_MAX_ATTEMPTS = int(os.environ.get('OTP_MAX_ATTEMPTS', '5'))
+OTP_RESEND_COOLDOWN_SECONDS = int(os.environ.get('OTP_RESEND_COOLDOWN_SECONDS', '60'))
+PAYMENT_GATEWAY = os.environ.get('PAYMENT_GATEWAY', 'simulation')
+PAYMENT_SIMULATION_ENABLED = os.environ.get(
+    'PAYMENT_SIMULATION_ENABLED', 'True' if DEBUG else 'False',
+).lower() in ('1', 'true', 'yes')
+APPLE_PAY_DOMAIN_ASSOCIATION_PATH = os.environ.get(
+    'APPLE_PAY_DOMAIN_ASSOCIATION_PATH',
+    str(BASE_DIR / '.well-known' / 'apple-developer-merchantid-domain-association'),
+)
 
 # Telegram-бот (см. README, раздел «Telegram-бот»). Без токена бот просто выключен.
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '')

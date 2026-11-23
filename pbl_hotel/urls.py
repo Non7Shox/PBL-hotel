@@ -3,9 +3,15 @@ from django.urls import path, include
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
+from bookings.views import apple_pay_domain_association
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path(
+        '.well-known/apple-developer-merchantid-domain-association',
+        apple_pay_domain_association,
+        name='apple_pay_domain_association',
+    ),
     path('accounts/', include('accounts.urls')),
     path('bookings/', include('bookings.urls')),
     path('staff/', include('staff.urls')),

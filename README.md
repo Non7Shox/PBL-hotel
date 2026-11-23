@@ -16,7 +16,7 @@ A full-featured hotel management web application built with **Django 6** as a Pr
 | **Booking codes** | Every reservation gets a unique human-readable code (e.g. `AUR-X7K4P2`) |
 | **My bookings** | Authenticated guests can view, track and cancel their bookings |
 | **Guest reviews** | Leave a 1–5 star rating and comment after a stay (one review per room per guest) |
-| **User accounts** | Register, log in, and view a personal profile with booking statistics |
+| **User accounts** | Password, Google OAuth 2.0 and email OTP login with verified email and phone profile fields |
 
 ### Staff dashboard (`/staff/`)
 | Feature | Description |
@@ -130,14 +130,24 @@ Open your browser at **http://127.0.0.1:8000/**
 
 ### Environment variables
 
-The defaults work for local development, so nothing needs to be set to run the project. For a production deployment, set:
+Set `DJANGO_SECRET_KEY` for both local development and production. For production, also configure:
 
 | Variable | Default | Purpose |
 |---|---|---|
 | `DJANGO_DEBUG` | `True` | Set to `False` in production |
-| `DJANGO_SECRET_KEY` | local dev key | **Required** when `DJANGO_DEBUG=False` — the app refuses to start without it |
+| `DJANGO_SECRET_KEY` | required | Secret used to sign sessions and security tokens; set it locally and in production |
 | `DJANGO_ALLOWED_HOSTS` | `127.0.0.1,localhost` | Comma-separated list of host names the site is served on |
-| `DJANGO_SITE_URL` | `http://127.0.0.1:8001` | Public address of the site, used in bot messages |
+| `DJANGO_SITE_URL` | local URL in debug, production domain otherwise | Base URL used for OAuth callbacks and bot links |
+| `GOOGLE_OAUTH_CLIENT_ID` / `GOOGLE_OAUTH_CLIENT_SECRET` | empty | OAuth client credentials; register `/accounts/google/callback/` at Google |
+| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | empty | SMTP delivery for email OTP |
+| `EMAIL_API_TOKEN` / `EMAIL_API_URL` | empty | Optional email API; POST JSON `{to, subject, message}` using Bearer auth |
+| `SMS_API_TOKEN` / `SMS_API_URL` | empty | SMS provider; POST JSON `{to, message}` using Bearer auth |
+| `OTP_TTL_SECONDS` | `600` | OTP lifetime |
+| `OTP_MAX_ATTEMPTS` | `5` | Maximum wrong code attempts |
+| `OTP_RESEND_COOLDOWN_SECONDS` | `60` | Minimum delay between code sends |
+| `PAYMENT_GATEWAY` | `simulation` | Currently supported gateway is the no-charge test simulation |
+| `PAYMENT_SIMULATION_ENABLED` | follows `DJANGO_DEBUG` | Must remain `False` in production until a real gateway is integrated |
+| `APPLE_PAY_DOMAIN_ASSOCIATION_PATH` | `.well-known/apple-developer-merchantid-domain-association` | Absolute path to the verification file provided by Apple |
 | `TELEGRAM_BOT_TOKEN` | empty (bot off) | Token from @BotFather, see [Telegram bot](#-telegram-bot) |
 | `TELEGRAM_BOT_USERNAME` | empty | Bot username without `@`, used for the "notify me in Telegram" link |
 | `TELEGRAM_STAFF_CHAT_ID` | empty | Reception chat that receives bookings and the morning summary |
@@ -145,7 +155,40 @@ The defaults work for local development, so nothing needs to be set to run the p
 
 Instead of exporting variables you can put them in a `.env` file next to `manage.py` (one `KEY=VALUE` per line; see `.env.example`). The file is git-ignored; real environment variables take precedence.
 
-Generate a secret key with:
+The OAuth callback must be registered in Google Cloud Console for each origin used, for example `http://127.0.0.1:8001/accounts/google/callback/` and `https://bookbreinhotel.me/accounts/google/callback/`. Email and SMS API adapters use JSON POST requests and the `Authorization: Bearer <token>` header. In development, email uses Django's console backend and SMS codes are written to the application log; production requires real provider credentials.
+
+Booking payments currently use a no-charge training flow only. Keep `PAYMENT_SIMULATION_ENABLED=False` on the live service. Apple Pay domain verification only serves the file at `/.well-known/apple-developer-merchantid-domain-association`; providing that file does not enable Apple Pay checkout or process payments.
+
+After pulling changes locally, run:
+
+```bash
+python manage.py migrate
+python manage.py test
+```
+
+On the server, update the service environment in `/etc/systemd/system/pbl_hotel.service.d/override.conf`, then run:
+
+```bash
+cd /path/to/PBL-hotel
+source .venv/bin/activate
+python manage.py migrate
+python manage.py collectstatic --noinput
+sudo systemctl daemon-reload
+sudo systemctl restart pbl_hotel
+sudo systemctl status pbl_hotel --no-pager
+```
+
+In production, set `DJANGO_DEBUG=False`, a unique `DJANGO_SECRET_KEY`, the host/origin variables, and real SMTP/SMS provider credentials. The app's payment simulation is test-only and cannot process a real charge; keep `PAYMENT_SIMULATION_ENABLED=False` in production. Create Google OAuth credentials and register both the production callback (`https://bookbreinhotel.me/accounts/google/callback/`) and the local callback you use for development.
+
+After updating settings or models:
+
+```bash
+python manage.py makemigrations accounts bookings
+python manage.py migrate
+python manage.py collectstatic
+```
+
+Generate a secret key and put it in `.env`:
 
 ```bash
 python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
@@ -162,10 +205,14 @@ python -c "from django.core.management.utils import get_random_secret_key; print
 | `/bookings/` | Create a booking |
 | `/bookings/my/` | Guest's booking list |
 | `/bookings/<code>/` | Booking detail (public link) |
+| `/bookings/<code>/pay/` | Protected payment step; training simulation only |
+| `/.well-known/apple-developer-merchantid-domain-association` | Serves the configured Apple domain verification file |
 | `/accounts/login/` | Guest login |
 | `/accounts/staff-login/` | Staff-only login |
 | `/accounts/signup/` | Guest registration |
 | `/accounts/profile/` | Guest profile page |
+| `/accounts/otp/send/` | Request a one-time email or SMS code |
+| `/accounts/google/` | Start Google OAuth 2.0 login |
 | `/staff/` | Staff dashboard |
 | `/admin/` | Django admin panel |
 

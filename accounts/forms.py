@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
@@ -16,10 +18,16 @@ class SignUpForm(UserCreationForm):
         label="E-mail",
         widget=forms.EmailInput(attrs={'placeholder': 'guest@example.com'}),
     )
+    phone = forms.CharField(
+        label="Телефон",
+        required=False,
+        max_length=30,
+        widget=forms.TextInput(attrs={'placeholder': '+998 90 000 00 00'}),
+    )
 
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ('username', 'first_name', 'last_name', 'email')
+        fields = ('username', 'first_name', 'last_name', 'email', 'phone')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -37,11 +45,23 @@ class SignUpForm(UserCreationForm):
             raise forms.ValidationError("Пользователь с таким e-mail уже зарегистрирован.")
         return email
 
+    def clean_phone(self):
+        phone = self.cleaned_data['phone'].strip()
+        if phone and not re.fullmatch(r'\+?[0-9 ()-]{7,30}', phone):
+            raise forms.ValidationError("Введите корректный номер телефона.")
+        normalized = ''.join(
+            character for character in phone if character.isdigit() or character == '+'
+        )
+        if normalized and not re.fullmatch(r'\+?[1-9]\d{6,14}', normalized):
+            raise forms.ValidationError("Введите корректный номер телефона.")
+        return normalized
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
         user.first_name = self.cleaned_data['first_name']
         user.last_name = self.cleaned_data['last_name']
+        self.phone = self.cleaned_data.get('phone', '')
         if commit:
             user.save()
         return user

@@ -31,6 +31,30 @@ class Booking(models.Model):
     STATUS_CHECKED_OUT = 'checked_out'
     STATUS_CANCELLED = 'cancelled'
     STATUS_NO_SHOW = 'no_show'
+    PAYMENT_UNPAID = 'unpaid'
+    PAYMENT_PENDING = 'pending'
+    PAYMENT_PAID = 'paid'
+    PAYMENT_FAILED = 'failed'
+    PAYMENT_CANCELLED = 'cancelled'
+    PAYMENT_REFUNDED = 'refunded'
+    PAYMENT_METHOD_CARD = 'card'
+    PAYMENT_METHOD_APPLE_PAY = 'apple_pay'
+    PAYMENT_METHOD_TEST_GATEWAY = 'test_gateway'
+
+    PAYMENT_STATUS_CHOICES = [
+        (PAYMENT_UNPAID, 'Не оплачено'),
+        (PAYMENT_PENDING, 'Ожидает оплаты'),
+        (PAYMENT_PAID, 'Оплачено'),
+        (PAYMENT_FAILED, 'Ошибка оплаты'),
+        (PAYMENT_CANCELLED, 'Оплата отменена'),
+        (PAYMENT_REFUNDED, 'Возвращено'),
+    ]
+
+    PAYMENT_METHOD_CHOICES = [
+        (PAYMENT_METHOD_CARD, 'Банковская карта'),
+        (PAYMENT_METHOD_APPLE_PAY, 'Apple Pay'),
+        (PAYMENT_METHOD_TEST_GATEWAY, 'Тестовый шлюз'),
+    ]
 
     STATUS_CHOICES = [
         (STATUS_PENDING, 'Ожидает подтверждения'),
@@ -91,6 +115,25 @@ class Booking(models.Model):
     
     is_paid = models.BooleanField(default=False, verbose_name="Оплачено")
     payment_id = models.CharField(max_length=255, blank=True, null=True, verbose_name="ID платежа (Payme/Click/Stripe)")
+    payment_status = models.CharField(
+        max_length=12,
+        choices=PAYMENT_STATUS_CHOICES,
+        default=PAYMENT_UNPAID,
+        verbose_name="Статус оплаты",
+    )
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PAYMENT_METHOD_CHOICES,
+        blank=True,
+        verbose_name="Способ оплаты",
+    )
+    payment_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name="Сумма платежа",
+    )
 
     total_price = models.DecimalField(
         max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="Итоговая сумма"
@@ -264,5 +307,3 @@ class Booking(models.Model):
     @classmethod
     def is_room_free(cls, room, check_in, check_out, exclude_pk=None):
         return not cls.overlapping(room, check_in, check_out, exclude_pk=exclude_pk).exists()
-
-

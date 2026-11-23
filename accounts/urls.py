@@ -11,4 +11,8 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('signup/', views.signup, name='signup'),
     path('profile/', views.profile, name='profile'),
+    path('otp/send/', views.otp_send, name='otp_send'),
+    path('otp/verify/', views.otp_verify, name='otp_verify'),
+    path('google/', views.google_login, name='google_login'),
+    path('google/callback/', views.google_callback, name='google_callback'),
 ]

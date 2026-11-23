@@ -13,11 +13,12 @@ class BookingAdmin(admin.ModelAdmin):
         'booked_dates_label',
         'guests',
         'total_price',
+        'payment_status',
         'status_badge',
         'source',
         'created_at',
     )
-    list_filter = ('status', 'source', 'check_in', 'room__floor')
+    list_filter = ('status', 'payment_status', 'source', 'check_in', 'room__floor')
     search_fields = ('code', 'guest_name', 'guest_email', 'guest_phone', 'room__title')
     date_hierarchy = 'check_in'
     list_select_related = ('room', 'user')
@@ -26,7 +27,7 @@ class BookingAdmin(admin.ModelAdmin):
     actions = ('confirm_bookings', 'cancel_bookings')
 
     fieldsets = (
-        ("Бронь", {'fields': ('code', 'status', 'source', 'room', 'user')}),
+        ("Бронь", {'fields': ('code', 'status', 'payment_status', 'payment_method', 'payment_amount', 'is_paid', 'payment_id', 'source', 'room', 'user')}),
         ("Даты и гости", {'fields': ('check_in', 'check_out', 'guests', 'total_price')}),
         ("Гость", {'fields': ('guest_name', 'guest_email', 'guest_phone', 'special_requests')}),
         ("Служебное", {'fields': ('created_at', 'updated_at', 'status_changed_at')}),

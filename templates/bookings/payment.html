@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Оплата брони {{ booking.code }} — Aurelio Hotel{% endblock %}
+
+{% block content %}
+<section class="page-band">
+  <div class="container">
+    <span class="hero-eyebrow">Шаг оплаты</span>
+    <h1 class="mt-3">Бронь {{ booking.code }}</h1>
+    <p>{{ booking.room.title }} · {{ booking.check_in|date:"d.m.Y" }} — {{ booking.check_out|date:"d.m.Y" }}</p>
+  </div>
+</section>
+
+<main class="container pb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <section class="panel-card">
+        <h2 class="h4">Сумма к оплате</h2>
+        <p class="serif-number fs-3">{{ currency }}{{ booking.total_price }}</p>
+        <p>Статус: {{ booking.get_payment_status_display }}</p>
+
+        {% if booking.is_paid %}
+          <div class="alert alert-success" role="status">Бронь уже оплачена. Транзакция {{ booking.payment_id }}.</div>
+        {% elif booking.status == 'cancelled' %}
+          <div class="alert alert-warning" role="status">Отменённую бронь оплатить нельзя.</div>
+        {% elif payment_simulation_enabled %}
+          <p class="small text-muted">Учебный режим не списывает деньги. Реальные платежи картой и Apple Pay не подключены.</p>
+          <form method="post" action="{% url 'bookings:payment_process' booking.code %}" class="d-flex flex-column gap-2">
+            {% csrf_token %}
+            <input type="hidden" name="payment_method" value="test_gateway">
+            <button type="submit" name="action" value="success" class="btn btn-copper">Успешная тестовая оплата</button>
+            <button type="submit" name="action" value="fail" class="btn btn-outline-copper">Проверить ошибку оплаты</button>
+            <button type="submit" name="action" value="cancel" class="btn btn-outline-secondary">Отменить оплату</button>
+          </form>
+        {% else %}
+          <p class="small text-muted">Оплата временно недоступна. Бронь пока не оплачена.</p>
+        {% endif %}
+
+        <a href="{% url 'bookings:booking_success' booking.code %}" class="btn btn-link mt-3">Вернуться к брони</a>
+      </section>
+    </div>
+  </div>
+</main>
+{% endblock %}

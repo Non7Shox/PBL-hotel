@@ -1,9 +1,11 @@
 from datetime import datetime
+import secrets
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.db import transaction
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -70,7 +72,7 @@ def booking_create(request, pk):
         _remember_booking(request, booking)
         notify.booking_created(booking)
         messages.success(request, f"Заявка принята. Код брони: {booking.code}.")
-        return redirect('bookings:booking_success', code=booking.code)
+        return redirect('bookings:booking_payment', code=booking.code)
 
     context = {
         'room': room,
@@ -83,12 +85,97 @@ def booking_create(request, pk):
 
 def booking_success(request, code):
     """Страница подтверждения: код брони, детали, следующие шаги."""
-    booking = _get_booking_or_none(request, code) or get_object_or_404(Booking, code=code.upper())
+    booking = _get_booking_or_none(request, code)
+    if booking is None:
+        raise Http404
     return render(request, 'bookings/booking_success.html', {
         'booking': booking,
         'currency': CURRENCY,
         'telegram_link': telegram_link(booking),
     })
+
+
+def booking_payment(request, code):
+    booking = _get_booking_or_none(request, code)
+    if booking is None:
+        raise Http404
+    return render(request, 'bookings/payment.html', {
+        'booking': booking,
+        'currency': CURRENCY,
+        'payment_simulation_enabled': (
+            settings.PAYMENT_GATEWAY == 'simulation'
+            and settings.PAYMENT_SIMULATION_ENABLED
+        ),
+    })
+
+
+@require_POST
+def payment_process(request, code):
+    with transaction.atomic():
+        booking = (
+            Booking.objects.select_for_update()
+            .select_related('room', 'room__floor', 'user')
+            .filter(code=(code or '').strip().upper())
+            .first()
+        )
+        if booking is None or not _can_view(request, booking):
+            messages.warning(request, "Бронь не найдена.")
+            return redirect('bookings:booking_lookup')
+        if booking.is_paid:
+            return redirect('bookings:booking_success', code=booking.code)
+        if booking.status == Booking.STATUS_CANCELLED:
+            messages.error(request, "Нельзя оплатить отменённую бронь.")
+            return redirect('bookings:booking_detail', code=booking.code)
+        if (
+            settings.PAYMENT_GATEWAY != 'simulation'
+            or not settings.PAYMENT_SIMULATION_ENABLED
+        ):
+            messages.error(request, "Тестовая оплата отключена. Выберите другой способ оплаты.")
+            return redirect('bookings:booking_payment', code=booking.code)
+
+        action = request.POST.get('action')
+        payment_method = request.POST.get('payment_method', Booking.PAYMENT_METHOD_TEST_GATEWAY)
+        if payment_method != Booking.PAYMENT_METHOD_TEST_GATEWAY:
+            messages.error(
+                request,
+                "Оплата картой и Apple Pay пока не подключена. Используйте тестовый шлюз.",
+            )
+            return redirect('bookings:booking_payment', code=booking.code)
+
+        booking.payment_method = payment_method
+        booking.payment_amount = booking.total_price
+        booking.payment_id = f'TEST-{secrets.token_urlsafe(12)}'
+        booking.is_paid = False
+        if action == 'success':
+            booking.payment_status = Booking.PAYMENT_PAID
+            booking.is_paid = True
+            messages.success(request, "Тестовая оплата прошла успешно.")
+        elif action == 'fail':
+            booking.payment_status = Booking.PAYMENT_FAILED
+            messages.error(request, "Тестовая оплата не прошла. Попробуйте ещё раз.")
+        elif action == 'cancel':
+            booking.payment_status = Booking.PAYMENT_CANCELLED
+            messages.info(request, "Оплата отменена. Бронь не оплачена.")
+        else:
+            messages.error(request, "Неизвестный результат оплаты.")
+            return redirect('bookings:booking_payment', code=booking.code)
+        booking.save(update_fields=(
+            'payment_status', 'payment_method', 'payment_amount',
+            'is_paid', 'payment_id', 'updated_at',
+        ))
+        return redirect('bookings:booking_success', code=booking.code)
+
+
+def apple_pay_domain_association(request):
+    association_path = settings.APPLE_PAY_DOMAIN_ASSOCIATION_PATH
+    try:
+        with open(association_path, 'rb') as association_file:
+            contents = association_file.read()
+    except OSError as exc:
+        raise Http404("Файл подтверждения домена Apple Pay не установлен.") from exc
+    response = HttpResponse(contents, content_type='application/octet-stream')
+    response['X-Content-Type-Options'] = 'nosniff'
+    return response
 
 
 def booking_detail(request, code):
@@ -205,5 +292,3 @@ def availability_api(request):
         else "На эти даты номер уже забронирован — выберите другой период."
     )
     return JsonResponse(payload)
-
-

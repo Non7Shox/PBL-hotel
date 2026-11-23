@@ -24,6 +24,7 @@
             <tr><th>Гостей</th><td>{{ booking.guests }}</td></tr>
             <tr><th>Итого</th><td><span class="serif-number fs-4">{{ currency }}{{ booking.total_price }}</span></td></tr>
             <tr><th>Статус</th><td><span class="status-chip {{ booking.status_css }}">{{ booking.get_status_display }}</span></td></tr>
+            <tr><th>Оплата</th><td>{{ booking.get_payment_status_display }}</td></tr>
           </tbody>
         </table>
       </div>
@@ -31,9 +32,21 @@
 
     <div class="col-lg-5">
       <div class="panel-card mb-4">
+        {% if booking.is_paid %}
+          <div class="panel-title">Оплата завершена</div>
+          <p class="small mb-0">Оплата подтверждена тестовым шлюзом. ID транзакции: {{ booking.payment_id }}</p>
+        {% else %}
+          <div class="panel-title">Статус оплаты: {{ booking.get_payment_status_display }}</div>
+          {% if booking.status != 'cancelled' %}
+            <p class="small text-muted">Вы можете открыть защищённый шаг оплаты.</p>
+            <a href="{% url 'bookings:booking_payment' booking.code %}" class="btn btn-copper w-100">Перейти к оплате</a>
+          {% endif %}
+        {% endif %}
+      </div>
+      <div class="panel-card mb-4">
         <div class="panel-title">Что дальше</div>
         <ol class="ps-3 small mb-0 d-flex flex-column gap-2">
-          <li>Администратор проверит заявку и подтвердит её — письмо придёт на {{ booking.guest_email }}.</li>
+          <li>Администратор проверит заявку — письмо придёт на {{ booking.guest_email }}.</li>
           <li>При заселении назовите код <strong>{{ booking.code }}</strong> или покажите письмо.</li>
           <li>Отмена бесплатна не позднее чем за 24 часа до заезда.</li>
         </ol>

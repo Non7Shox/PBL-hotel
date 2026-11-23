@@ -8,6 +8,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from pathlib import Path
 
 from rooms.models import Floor, Room, SeasonalRate
 from .models import Booking
@@ -213,10 +214,30 @@ class BookingFlowTests(BookingTestMixin, TestCase):
         response = self.post_booking()
         booking = Booking.objects.get()
         self.assertRedirects(
-            response, reverse('bookings:booking_success', kwargs={'code': booking.code})
+            response, reverse('bookings:booking_payment', kwargs={'code': booking.code})
         )
         self.assertEqual(booking.status, Booking.STATUS_PENDING)
         self.assertEqual(booking.total_price, Decimal('200.00'))
+
+    def test_booking_payment_step_is_available_to_the_booking_owner(self):
+        response = self.post_booking()
+        booking = Booking.objects.get()
+        self.assertRedirects(
+            response,
+            reverse('bookings:booking_payment', kwargs={'code': booking.code}),
+        )
+        response = self.client.get(
+            reverse('bookings:booking_payment', kwargs={'code': booking.code})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Учебный режим')
+
+    def test_booking_success_does_not_disclose_unknown_booking(self):
+        booking = self.make_booking()
+        response = Client().get(
+            reverse('bookings:booking_success', kwargs={'code': booking.code})
+        )
+        self.assertEqual(response.status_code, 404)
 
     def test_guest_sees_own_booking_after_creating_it(self):
         self.post_booking()
@@ -243,3 +264,87 @@ class BookingFlowTests(BookingTestMixin, TestCase):
         response = self.post_booking()
         self.assertRedirects(response, reverse('rooms:room_detail', kwargs={'pk': self.room.pk}))
         self.assertFalse(Booking.objects.exists())
+
+    @override_settings(PAYMENT_GATEWAY='simulation', PAYMENT_SIMULATION_ENABLED=True)
+    def test_simulated_payment_marks_booking_as_paid(self):
+        booking = self.make_booking()
+        session = self.client.session
+        session['booking_codes'] = [booking.code]
+        session.save()
+
+        response = self.client.post(
+            reverse('bookings:payment_process', kwargs={'code': booking.code}),
+            {'action': 'success'},
+        )
+
+        booking.refresh_from_db()
+        self.assertRedirects(
+            response,
+            reverse('bookings:booking_success', kwargs={'code': booking.code}),
+        )
+        self.assertEqual(booking.payment_status, Booking.PAYMENT_PAID)
+        self.assertTrue(booking.is_paid)
+        self.assertTrue(booking.payment_id.startswith('TEST-'))
+        self.assertEqual(booking.payment_method, Booking.PAYMENT_METHOD_TEST_GATEWAY)
+        self.assertEqual(booking.payment_amount, booking.total_price)
+
+    @override_settings(PAYMENT_GATEWAY='simulation', PAYMENT_SIMULATION_ENABLED=True)
+    def test_failed_or_cancelled_payment_does_not_mark_booking_as_paid(self):
+        for offset, action, expected_status in (
+            (2, 'fail', Booking.PAYMENT_FAILED),
+            (10, 'cancel', Booking.PAYMENT_CANCELLED),
+        ):
+            booking = self.make_booking(start_offset=offset)
+            session = self.client.session
+            session['booking_codes'] = [booking.code]
+            session.save()
+
+            self.client.post(
+                reverse('bookings:payment_process', kwargs={'code': booking.code}),
+                {'action': action},
+            )
+
+            booking.refresh_from_db()
+            self.assertEqual(booking.payment_status, expected_status)
+            self.assertFalse(booking.is_paid)
+            self.assertEqual(booking.payment_method, Booking.PAYMENT_METHOD_TEST_GATEWAY)
+            self.assertEqual(booking.payment_amount, booking.total_price)
+
+    @override_settings(PAYMENT_GATEWAY='simulation', PAYMENT_SIMULATION_ENABLED=False)
+    def test_simulation_cannot_mark_booking_paid_when_disabled(self):
+        booking = self.make_booking()
+        session = self.client.session
+        session['booking_codes'] = [booking.code]
+        session.save()
+
+        self.client.post(
+            reverse('bookings:payment_process', kwargs={'code': booking.code}),
+            {'action': 'success'},
+        )
+
+        booking.refresh_from_db()
+        self.assertEqual(booking.payment_status, Booking.PAYMENT_UNPAID)
+        self.assertFalse(booking.is_paid)
+
+
+class ApplePayDomainAssociationTests(TestCase):
+    def test_configured_association_file_is_served(self):
+        with tempfile.TemporaryDirectory() as directory:
+            association_path = Path(directory) / 'apple-association'
+            association_path.write_bytes(b'verified-domain-payload')
+            with self.settings(APPLE_PAY_DOMAIN_ASSOCIATION_PATH=str(association_path)):
+                response = self.client.get(
+                    '/.well-known/apple-developer-merchantid-domain-association'
+                )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b'verified-domain-payload')
+        self.assertEqual(response['Content-Type'], 'application/octet-stream')
+
+    def test_missing_association_file_returns_404(self):
+        with tempfile.TemporaryDirectory() as directory:
+            missing_path = Path(directory) / 'not-installed'
+            with self.settings(APPLE_PAY_DOMAIN_ASSOCIATION_PATH=str(missing_path)):
+                response = self.client.get(
+                    '/.well-known/apple-developer-merchantid-domain-association'
+                )
+        self.assertEqual(response.status_code, 404)

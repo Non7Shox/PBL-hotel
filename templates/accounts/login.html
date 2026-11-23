@@ -29,6 +29,24 @@
           {% endfor %}
           <button type="submit" class="btn btn-copper w-100">Войти в аккаунт</button>
         </form>
+        <div class="text-center text-muted small my-3">или войдите без пароля</div>
+        <form method="post" action="{% url 'accounts:otp_send' %}" class="mb-3">
+          {% csrf_token %}
+          <input type="hidden" name="purpose" value="login">
+          <label class="form-label" for="otp-identifier">E-mail или подтверждённый телефон</label>
+          <input id="otp-identifier" class="form-control mb-2" name="identifier" autocomplete="username" required>
+          <button type="submit" class="btn btn-outline-copper w-100">Отправить код</button>
+        </form>
+        <form method="post" action="{% url 'accounts:otp_verify' %}">
+          {% csrf_token %}
+          <input type="hidden" name="purpose" value="login">
+          <label class="form-label" for="otp-login-identifier">E-mail или телефон</label>
+          <input id="otp-login-identifier" class="form-control mb-2" name="identifier" required>
+          <label class="form-label" for="otp-login-code">Код из сообщения</label>
+          <input id="otp-login-code" class="form-control mb-3" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required>
+          <button type="submit" class="btn btn-copper w-100">Войти по коду</button>
+        </form>
+        <a href="{% url 'accounts:google_login' %}" class="btn btn-outline-copper w-100 mt-3">Продолжить с Google</a>
       </div>
     </div>
     <div class="col-lg-4">
