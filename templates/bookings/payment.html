@@ -50,23 +50,59 @@
               </div>
             </section>
 
-            <section id="apple-pay-sandbox-panel" class="d-none mt-4" aria-labelledby="apple-pay-sandbox-title" aria-live="polite">
-              <div class="panel-card">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <h3 id="apple-pay-sandbox-title" class="h5 mb-0">Apple Pay sandbox</h3>
-                  <span class="badge text-bg-secondary">DEMO</span>
+            <section id="apple-pay-sandbox-panel" class="d-none mt-4" aria-labelledby="apple-pay-sandbox-title">
+              <h3 id="apple-pay-sandbox-title" class="h5">Apple Pay sandbox</h3>
+              <p class="small text-muted">Откройте демо экран iPhone, чтобы пройти пошаговое подтверждение.</p>
+              <button type="button" class="btn btn-dark" id="open-iphone-sandbox">Открыть демо на iPhone</button>
+            </section>
+
+            <section class="iphone-sandbox" id="iphone-sandbox" role="dialog" aria-modal="true"
+                     aria-labelledby="iphone-sandbox-title" aria-hidden="true">
+              <div class="iphone-sandbox__backdrop"></div>
+              <div class="iphone-sandbox__sheet">
+                <div class="iphone-sandbox__handle" aria-hidden="true"></div>
+                <header class="iphone-sandbox__header">
+                  <div>
+                    <p class="iphone-sandbox__eyebrow">Aurelio Hotel · SANDBOX</p>
+                    <h2 id="iphone-sandbox-title">Apple Pay</h2>
+                  </div>
+                  <button type="button" class="iphone-sandbox__close" id="close-iphone-sandbox" aria-label="Закрыть демо">×</button>
+                </header>
+
+                <div class="iphone-sandbox__total">
+                  <span>К оплате</span>
+                  <strong>{{ currency }}{{ booking.total_price }}</strong>
                 </div>
-                <p class="small">Учебный платёж Aurelio Hotel</p>
-                <dl class="row small">
-                  <dt class="col-6">Бронь</dt><dd class="col-6">{{ booking.code }}</dd>
-                  <dt class="col-6">Сумма</dt><dd class="col-6">{{ currency }}{{ booking.total_price }}</dd>
-                  <dt class="col-6">Способ</dt><dd class="col-6">Apple Pay sandbox</dd>
+
+                <dl class="iphone-sandbox__details">
+                  <div><dt>Отель</dt><dd>Aurelio Hotel</dd></div>
+                  <div><dt>Номер</dt><dd>{{ booking.room.title }}</dd></div>
+                  <div><dt>Бронь</dt><dd>{{ booking.code }}</dd></div>
+                  <div><dt>Даты</dt><dd>{{ booking.check_in|date:"d.m.Y" }} — {{ booking.check_out|date:"d.m.Y" }}</dd></div>
+                  <div><dt>Способ</dt><dd>Apple Pay sandbox</dd></div>
                 </dl>
-                <p class="small text-muted">Это демонстрация интерфейса. Apple Merchant и реальные платежи не используются.</p>
-                <div class="d-flex flex-column gap-2">
-                  <button type="submit" name="action" value="success" class="btn btn-dark">Подтвердить учебный платёж</button>
-                  <button type="submit" name="action" value="fail" class="btn btn-outline-copper">Смоделировать ошибку</button>
-                  <button type="submit" name="action" value="cancel" class="btn btn-outline-secondary">Отменить</button>
+
+                <p class="iphone-sandbox__notice">Демонстрация интерфейса. Нет связи с Apple Merchant и списания денег.</p>
+
+                <div class="iphone-sandbox__step" id="iphone-review-step">
+                  <p class="small mb-3">Проверьте детали бронирования перед подтверждением.</p>
+                  <button type="button" class="iphone-sandbox__primary" id="iphone-continue">Продолжить</button>
+                </div>
+
+                <div class="iphone-sandbox__step d-none" id="iphone-confirm-step" aria-live="polite">
+                  <div class="iphone-sandbox__faceid" id="iphone-faceid" aria-hidden="true">
+                    <span></span><span></span><span></span>
+                  </div>
+                  <p class="iphone-sandbox__confirm-copy" id="iphone-confirm-copy">Подтвердите учебный платёж</p>
+                  <button type="button" class="iphone-sandbox__primary" id="iphone-confirm">
+                    Подтвердить в sandbox
+                  </button>
+                  <div class="iphone-sandbox__outcomes d-none" id="iphone-outcomes">
+                    <p class="small text-success mb-2" role="status">Подтверждение выполнено в sandbox. Выберите результат сценария.</p>
+                    <button type="submit" name="action" value="success" class="iphone-sandbox__primary">Завершить успешно</button>
+                    <button type="submit" name="action" value="fail" class="iphone-sandbox__secondary">Смоделировать ошибку</button>
+                    <button type="submit" name="action" value="cancel" class="iphone-sandbox__secondary">Отменить платёж</button>
+                  </div>
                 </div>
               </div>
             </section>
@@ -80,6 +116,73 @@
     </div>
   </div>
 </main>
+{% endblock %}
+
+{% block extra_style %}
+  .iphone-sandbox{ display:none; }
+  .iphone-sandbox.is-open{
+    position:fixed; inset:0; z-index:2000; display:flex; align-items:flex-end;
+    justify-content:center; padding-top:24px;
+  }
+  .iphone-sandbox__backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.58); }
+  .iphone-sandbox__sheet{
+    position:relative; width:min(100%, 520px); max-height:calc(100dvh - 24px);
+    overflow-y:auto; padding:8px 24px calc(24px + env(safe-area-inset-bottom));
+    color:#111110; background:#f6f6f4; border-radius:16px 16px 0 0;
+    box-shadow:0 12px 48px rgba(0,0,0,.24);
+  }
+  .iphone-sandbox__handle{ width:40px; height:4px; margin:0 auto 16px; border-radius:999px; background:#cbcbc5; }
+  .iphone-sandbox__header{ display:flex; justify-content:space-between; align-items:center; gap:16px; }
+  .iphone-sandbox__eyebrow{ margin:0 0 4px; color:#6b6b66; font-size:.75rem; letter-spacing:.04em; }
+  .iphone-sandbox__header h2{ margin:0; font-size:1.5rem; font-weight:600; }
+  .iphone-sandbox__close{
+    width:40px; height:40px; border:0; border-radius:50%; color:#3f3f3c;
+    background:#e4e4df; font-size:1.5rem; line-height:1;
+  }
+  .iphone-sandbox__total{ display:flex; justify-content:space-between; align-items:baseline; margin:24px 0 16px; }
+  .iphone-sandbox__total span{ color:#6b6b66; font-size:.875rem; }
+  .iphone-sandbox__total strong{ font-size:1.875rem; font-weight:600; }
+  .iphone-sandbox__details{ margin:0; padding:16px; border-radius:12px; background:#fff; }
+  .iphone-sandbox__details div{ display:flex; justify-content:space-between; gap:16px; padding:6px 0; }
+  .iphone-sandbox__details dt{ color:#6b6b66; font-weight:400; }
+  .iphone-sandbox__details dd{ margin:0; text-align:right; font-weight:500; }
+  .iphone-sandbox__notice{ margin:16px 0; color:#6b6b66; font-size:.75rem; }
+  .iphone-sandbox__primary,.iphone-sandbox__secondary{
+    display:block; width:100%; min-height:48px; margin-top:8px; padding:8px 12px;
+    border:0; border-radius:12px; font-size:1rem; font-weight:600;
+    transition:transform 500ms cubic-bezier(.22,1,.36,1), background-color 300ms;
+  }
+  .iphone-sandbox__primary{ color:#fff; background:#000; }
+  .iphone-sandbox__secondary{ color:#111110; background:#e4e4df; }
+  .iphone-sandbox__primary:hover,.iphone-sandbox__secondary:hover{ transform:translateY(-1px); }
+  .iphone-sandbox__primary:active,.iphone-sandbox__secondary:active{ transform:scale(.98); }
+  .iphone-sandbox__primary:focus-visible,.iphone-sandbox__secondary:focus-visible,.iphone-sandbox__close:focus-visible{
+    outline:3px solid #1f4d3f; outline-offset:3px;
+  }
+  .iphone-sandbox__faceid{
+    display:flex; justify-content:center; gap:8px; margin:8px auto 16px;
+    color:#1f4d3f;
+  }
+  .iphone-sandbox__faceid span{
+    width:8px; height:8px; border:2px solid currentColor; border-radius:50%;
+    animation:iphone-sandbox-pulse 1200ms cubic-bezier(.22,1,.36,1) infinite alternate;
+  }
+  .iphone-sandbox__faceid span:nth-child(2){ animation-delay:150ms; }
+  .iphone-sandbox__faceid span:nth-child(3){ animation-delay:300ms; }
+  .iphone-sandbox__confirm-copy{ text-align:center; font-weight:500; }
+  .iphone-sandbox__outcomes{ margin-top:16px; }
+  body.iphone-sandbox-open{ overflow:hidden; }
+  @keyframes iphone-sandbox-pulse{ from{ opacity:.35; transform:scale(.85); } to{ opacity:1; transform:scale(1.15); } }
+  @media (min-width:768px){
+    .iphone-sandbox{ align-items:center; }
+    .iphone-sandbox__sheet{ border-radius:16px; padding-top:16px; }
+  }
+  @media (prefers-reduced-motion:reduce){
+    .iphone-sandbox__faceid span{ animation:none; opacity:.7; }
+    .iphone-sandbox__primary,.iphone-sandbox__secondary{ transition:opacity 300ms; }
+      .iphone-sandbox__primary:hover,.iphone-sandbox__secondary:hover,
+      .iphone-sandbox__primary:active,.iphone-sandbox__secondary:active{ transform:none; }
+  }
 {% endblock %}
 
 {% block extra_js %}
@@ -99,6 +202,77 @@
       input.addEventListener('change', updatePaymentPanels);
     });
     updatePaymentPanels();
+
+    var applePayChoice = document.getElementById('payment-apple-pay');
+    var sandbox = document.getElementById('iphone-sandbox');
+    var openButton = document.getElementById('open-iphone-sandbox');
+    var closeButton = document.getElementById('close-iphone-sandbox');
+    var continueButton = document.getElementById('iphone-continue');
+    var confirmButton = document.getElementById('iphone-confirm');
+    var reviewStep = document.getElementById('iphone-review-step');
+    var confirmStep = document.getElementById('iphone-confirm-step');
+    var outcomes = document.getElementById('iphone-outcomes');
+    var faceId = document.getElementById('iphone-faceid');
+    var confirmCopy = document.getElementById('iphone-confirm-copy');
+    var mobileDevice = window.matchMedia('(max-width: 767px)').matches ||
+      /iPhone|iPod|Android.*Mobile/i.test(navigator.userAgent);
+
+    function openSandbox() {
+      applePayChoice.checked = true;
+      applePayChoice.dispatchEvent(new Event('change', {bubbles: true}));
+      sandbox.classList.add('is-open');
+      sandbox.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('iphone-sandbox-open');
+      closeButton.focus();
+    }
+
+    function closeSandbox() {
+      sandbox.classList.remove('is-open');
+      sandbox.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('iphone-sandbox-open');
+      openButton.focus();
+    }
+
+    openButton.addEventListener('click', openSandbox);
+    closeButton.addEventListener('click', closeSandbox);
+    continueButton.addEventListener('click', function () {
+      reviewStep.classList.add('d-none');
+      confirmStep.classList.remove('d-none');
+      confirmButton.focus();
+    });
+    confirmButton.addEventListener('click', function () {
+      confirmButton.classList.add('d-none');
+      faceId.classList.add('is-confirmed');
+      confirmCopy.textContent = 'Учебное подтверждение завершено';
+      outcomes.classList.remove('d-none');
+      outcomes.querySelector('button').focus();
+    });
+    sandbox.addEventListener('click', function (event) {
+      if (event.target.classList.contains('iphone-sandbox__backdrop')) closeSandbox();
+    });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && sandbox.classList.contains('is-open')) closeSandbox();
+      if (event.key === 'Tab' && sandbox.classList.contains('is-open')) {
+        var controls = Array.prototype.slice.call(
+          sandbox.querySelectorAll('button:not([disabled])')
+        ).filter(function (control) {
+          return control.offsetParent !== null;
+        });
+        var firstControl = controls[0];
+        var lastControl = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === firstControl) {
+          event.preventDefault();
+          lastControl.focus();
+        } else if (!event.shiftKey && document.activeElement === lastControl) {
+          event.preventDefault();
+          firstControl.focus();
+        }
+      }
+    });
+
+    if (mobileDevice && document.getElementById('payment-apple-pay')) {
+      openSandbox();
+    }
   })();
 </script>
 {% endblock %}

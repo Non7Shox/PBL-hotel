@@ -336,6 +336,28 @@ class BookingFlowTests(BookingTestMixin, TestCase):
         self.assertContains(response, 'apple-pay-sandbox-panel')
         self.assertContains(response, 'реального платёжного шлюза нет')
 
+    def test_payment_page_contains_mobile_apple_pay_sandbox_confirmation_steps(self):
+        booking = self.make_booking()
+        session = self.client.session
+        session['booking_codes'] = [booking.code]
+        session.save()
+
+        response = self.client.get(
+            reverse('bookings:booking_payment', kwargs={'code': booking.code}),
+            HTTP_USER_AGENT='Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="iphone-sandbox"')
+        self.assertContains(response, 'id="iphone-review-step"')
+        self.assertContains(response, 'id="iphone-confirm-step"')
+        self.assertContains(response, 'id="iphone-outcomes"')
+        self.assertContains(response, 'window.matchMedia')
+        self.assertContains(response, 'Подтвердить в sandbox')
+        self.assertContains(response, 'name="action" value="success"')
+        self.assertContains(response, 'name="action" value="fail"')
+        self.assertContains(response, 'name="action" value="cancel"')
+
     def test_payment_method_and_status_are_shown_on_booking_detail_and_success(self):
         booking = self.make_booking(
             payment_method=Booking.PAYMENT_METHOD_APPLE_PAY,
