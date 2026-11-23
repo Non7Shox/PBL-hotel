@@ -26,7 +26,13 @@
           <p class="small text-muted">Все сценарии учебные: деньги не списываются, реального платёжного шлюза нет.</p>
           <form method="post" action="{% url 'bookings:payment_process' booking.code %}" id="sandboxPaymentForm">
             {% csrf_token %}
-            <fieldset class="mb-4">
+            <section class="desktop-qr-panel" aria-labelledby="desktop-qr-title">
+              <h3 id="desktop-qr-title" class="h5">Продолжите оплату на телефоне</h3>
+              <p>Откройте камеру iPhone и наведите её на QR код. На телефоне откроется экран sandbox оплаты брони.</p>
+              <img src="{{ payment_qr_url }}" alt="QR код для открытия учебной оплаты брони на телефоне" width="220" height="220">
+              <p class="small text-muted">QR код действует ограниченное время. Оплата доступна после его открытия на телефоне.</p>
+            </section>
+            <fieldset class="payment-methods mb-4">
               <legend class="h5">Способ оплаты</legend>
               <div class="form-check">
                 <input class="form-check-input" type="radio" name="payment_method" id="payment-card"
@@ -160,6 +166,7 @@
 
 {% block extra_style %}
   .iphone-sandbox{ display:none; }
+  .desktop-qr-panel{ display:none; }
   .iphone-sandbox.is-open{
     position:fixed; inset:0; z-index:2000; display:flex; align-items:flex-end;
     justify-content:center; padding-top:24px;
@@ -246,6 +253,13 @@
   body.iphone-sandbox-open{ overflow:hidden; }
   @keyframes iphone-sandbox-spin{ to{ transform:rotate(360deg); } }
   @media (min-width:768px){
+    .desktop-qr-panel{
+      display:flex; flex-direction:column; align-items:center; gap:12px;
+      padding:24px; text-align:center; border-radius:16px; background:#f6f6f4;
+    }
+    .desktop-qr-panel h3,.desktop-qr-panel p{ max-width:480px; text-wrap:balance; }
+    .desktop-qr-panel img{ display:block; padding:12px; border-radius:12px; background:#fff; }
+    .payment-methods,#card-sandbox-panel,#apple-pay-sandbox-panel{ display:none !important; }
     .iphone-sandbox.is-open{ align-items:center; padding:24px; }
     .iphone-sandbox__sheet{
       display:grid; grid-template-columns:minmax(240px, .9fr) minmax(380px, 1.1fr);

@@ -1,12 +1,17 @@
 from datetime import datetime
+from io import BytesIO
 import secrets
 
+import qrcode
+from qrcode.image.svg import SvgPathImage
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core import signing
 from django.db import transaction
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -20,6 +25,34 @@ from .forms import BookingForm, BookingLookupForm
 from .models import Booking
 
 CURRENCY = getattr(settings, 'HOTEL_CURRENCY', '$')
+PAYMENT_QR_TOKEN_MAX_AGE = 10 * 60
+
+
+def _is_mobile_request(request):
+    user_agent = request.META.get('HTTP_USER_AGENT', '').lower()
+    return any(device in user_agent for device in ('iphone', 'ipod', 'android', 'mobile'))
+
+
+def _booking_from_qr(request, code):
+    token = request.GET.get('qr')
+    if not token or not _is_mobile_request(request):
+        return None
+    try:
+        token_code = signing.loads(
+            token,
+            salt='bookings.payment_qr',
+            max_age=PAYMENT_QR_TOKEN_MAX_AGE,
+        )
+    except signing.BadSignature:
+        return None
+    normalized_code = (code or '').strip().upper()
+    if token_code != normalized_code:
+        return None
+    return (
+        Booking.objects.select_related('room', 'room__floor', 'user')
+        .filter(code=normalized_code)
+        .first()
+    )
 
 
 def _remember_booking(request, booking):
@@ -98,6 +131,15 @@ def booking_success(request, code):
 def booking_payment(request, code):
     booking = _get_booking_or_none(request, code)
     if booking is None:
+        booking = _booking_from_qr(request, code)
+        if booking:
+            _remember_booking(request, booking)
+            request.session.setdefault('qr_payment_codes', [])
+            if booking.code not in request.session['qr_payment_codes']:
+                request.session['qr_payment_codes'].append(booking.code)
+                request.session['qr_payment_codes'] = request.session['qr_payment_codes'][-10:]
+            return redirect('bookings:booking_payment', code=booking.code)
+    if booking is None:
         raise Http404
     return render(request, 'bookings/payment.html', {
         'booking': booking,
@@ -109,7 +151,36 @@ def booking_payment(request, code):
         'selected_payment_method': (
             booking.payment_method or Booking.PAYMENT_METHOD_CARD
         ),
+        'payment_qr_url': reverse(
+            'bookings:booking_payment_qr',
+            kwargs={'code': booking.code},
+        ),
     })
+
+
+def booking_payment_qr(request, code):
+    booking = _get_booking_or_none(request, code)
+    if (
+        booking is None
+        or booking.is_paid
+        or booking.status == Booking.STATUS_CANCELLED
+        or _is_mobile_request(request)
+        or settings.PAYMENT_GATEWAY != 'simulation'
+        or not settings.PAYMENT_SIMULATION_ENABLED
+    ):
+        raise Http404
+
+    token = signing.dumps(
+        booking.code,
+        salt='bookings.payment_qr',
+        compress=True,
+    )
+    payment_path = reverse('bookings:booking_payment', kwargs={'code': booking.code})
+    payment_url = f'{settings.SITE_URL.rstrip("/")}{payment_path}?qr={token}'
+    image = qrcode.make(payment_url, image_factory=SvgPathImage, box_size=8, border=4)
+    output = BytesIO()
+    image.save(output)
+    return HttpResponse(output.getvalue(), content_type='image/svg+xml')
 
 
 @require_POST
@@ -124,6 +195,12 @@ def payment_process(request, code):
         if booking is None or not _can_view(request, booking):
             messages.warning(request, "Бронь не найдена.")
             return redirect('bookings:booking_lookup')
+        if (
+            not _is_mobile_request(request)
+            and booking.code not in request.session.get('qr_payment_codes', [])
+        ):
+            messages.error(request, "Откройте QR-код на телефоне, чтобы продолжить оплату.")
+            return redirect('bookings:booking_payment', code=booking.code)
         if booking.is_paid:
             return redirect('bookings:booking_success', code=booking.code)
         if booking.status == Booking.STATUS_CANCELLED:
