@@ -24,6 +24,10 @@
             <tr><th>Даты</th><td>{{ booking.check_in|date:"d.m.Y" }} → {{ booking.check_out|date:"d.m.Y" }} ({{ booking.nights }} н.)</td></tr>
             <tr><th>Гостей</th><td>{{ booking.guests }}</td></tr>
             <tr><th>Итого</th><td><span class="serif-number fs-4">{{ currency }}{{ booking.total_price }}</span></td></tr>
+            <tr><th>Статус оплаты</th><td>{{ booking.get_payment_status_display }}</td></tr>
+            {% if booking.payment_method %}<tr><th>Способ оплаты</th><td>{{ booking.get_payment_method_display }}</td></tr>{% endif %}
+            {% if booking.payment_amount %}<tr><th>Сумма платежа</th><td>{{ currency }}{{ booking.payment_amount }}</td></tr>{% endif %}
+            {% if booking.payment_id %}<tr><th>Sandbox ID</th><td>{{ booking.payment_id }}</td></tr>{% endif %}
             <tr><th>Источник</th><td>{{ booking.get_source_display }}</td></tr>
             <tr><th>Гость</th><td>{{ booking.guest_name }} · {{ booking.guest_email }}{% if booking.guest_phone %} · {{ booking.guest_phone }}{% endif %}</td></tr>
             {% if booking.special_requests %}

@@ -106,6 +106,9 @@ def booking_payment(request, code):
             settings.PAYMENT_GATEWAY == 'simulation'
             and settings.PAYMENT_SIMULATION_ENABLED
         ),
+        'selected_payment_method': (
+            booking.payment_method or Booking.PAYMENT_METHOD_CARD
+        ),
     })
 
 
@@ -134,17 +137,32 @@ def payment_process(request, code):
             return redirect('bookings:booking_payment', code=booking.code)
 
         action = request.POST.get('action')
-        payment_method = request.POST.get('payment_method', Booking.PAYMENT_METHOD_TEST_GATEWAY)
-        if payment_method != Booking.PAYMENT_METHOD_TEST_GATEWAY:
+        payment_method = request.POST.get(
+            'payment_method',
+            Booking.PAYMENT_METHOD_TEST_GATEWAY,
+        )
+        if payment_method not in (
+            Booking.PAYMENT_METHOD_CARD,
+            Booking.PAYMENT_METHOD_APPLE_PAY,
+            Booking.PAYMENT_METHOD_TEST_GATEWAY,
+        ):
             messages.error(
                 request,
-                "Оплата картой и Apple Pay пока не подключена. Используйте тестовый шлюз.",
+                "Выберите один из доступных способов тестовой оплаты.",
             )
             return redirect('bookings:booking_payment', code=booking.code)
 
         booking.payment_method = payment_method
         booking.payment_amount = booking.total_price
-        booking.payment_id = f'TEST-{secrets.token_urlsafe(12)}'
+        if action in ('success', 'fail'):
+            method_code = {
+                Booking.PAYMENT_METHOD_CARD: 'CARD',
+                Booking.PAYMENT_METHOD_APPLE_PAY: 'APPLE',
+                Booking.PAYMENT_METHOD_TEST_GATEWAY: 'GATEWAY',
+            }[payment_method]
+            booking.payment_id = f'SANDBOX-{method_code}-{secrets.token_urlsafe(8)}'
+        else:
+            booking.payment_id = None
         booking.is_paid = False
         if action == 'success':
             booking.payment_status = Booking.PAYMENT_PAID

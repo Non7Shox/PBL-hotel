@@ -25,6 +25,8 @@
             <tr><th>Итого</th><td><span class="serif-number fs-4">{{ currency }}{{ booking.total_price }}</span></td></tr>
             <tr><th>Статус</th><td><span class="status-chip {{ booking.status_css }}">{{ booking.get_status_display }}</span></td></tr>
             <tr><th>Оплата</th><td>{{ booking.get_payment_status_display }}</td></tr>
+            {% if booking.payment_method %}<tr><th>Способ оплаты</th><td>{{ booking.get_payment_method_display }}</td></tr>{% endif %}
+            {% if booking.payment_amount %}<tr><th>Сумма платежа</th><td>{{ currency }}{{ booking.payment_amount }}</td></tr>{% endif %}
           </tbody>
         </table>
       </div>
@@ -34,9 +36,11 @@
       <div class="panel-card mb-4">
         {% if booking.is_paid %}
           <div class="panel-title">Оплата завершена</div>
-          <p class="small mb-0">Оплата подтверждена тестовым шлюзом. ID транзакции: {{ booking.payment_id }}</p>
+          <p class="small mb-1">Оплата подтверждена в учебном режиме через {{ booking.get_payment_method_display }}.</p>
+          <p class="small mb-0">Sandbox ID: {{ booking.payment_id }}</p>
         {% else %}
           <div class="panel-title">Статус оплаты: {{ booking.get_payment_status_display }}</div>
+          {% if booking.payment_method %}<p class="small">Способ оплаты: {{ booking.get_payment_method_display }}</p>{% endif %}
           {% if booking.status != 'cancelled' %}
             <p class="small text-muted">Вы можете открыть защищённый шаг оплаты.</p>
             <a href="{% url 'bookings:booking_payment' booking.code %}" class="btn btn-copper w-100">Перейти к оплате</a>

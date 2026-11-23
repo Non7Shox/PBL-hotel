@@ -5,6 +5,7 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -230,7 +231,7 @@ class BookingFlowTests(BookingTestMixin, TestCase):
             reverse('bookings:booking_payment', kwargs={'code': booking.code})
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Учебный режим')
+        self.assertContains(response, 'Все сценарии учебные')
 
     def test_booking_success_does_not_disclose_unknown_booking(self):
         booking = self.make_booking()
@@ -284,9 +285,99 @@ class BookingFlowTests(BookingTestMixin, TestCase):
         )
         self.assertEqual(booking.payment_status, Booking.PAYMENT_PAID)
         self.assertTrue(booking.is_paid)
-        self.assertTrue(booking.payment_id.startswith('TEST-'))
+        self.assertTrue(booking.payment_id.startswith('SANDBOX-GATEWAY-'))
         self.assertEqual(booking.payment_method, Booking.PAYMENT_METHOD_TEST_GATEWAY)
         self.assertEqual(booking.payment_amount, booking.total_price)
+
+    @override_settings(PAYMENT_GATEWAY='simulation', PAYMENT_SIMULATION_ENABLED=True)
+    def test_apple_pay_sandbox_persists_each_payment_outcome(self):
+        for offset, action, expected_status in (
+            (2, 'success', Booking.PAYMENT_PAID),
+            (10, 'fail', Booking.PAYMENT_FAILED),
+            (18, 'cancel', Booking.PAYMENT_CANCELLED),
+        ):
+            booking = self.make_booking(start_offset=offset)
+            session = self.client.session
+            session['booking_codes'] = [booking.code]
+            session.save()
+
+            response = self.client.post(
+                reverse('bookings:payment_process', kwargs={'code': booking.code}),
+                {'action': action, 'payment_method': Booking.PAYMENT_METHOD_APPLE_PAY},
+            )
+
+            booking.refresh_from_db()
+            self.assertRedirects(
+                response,
+                reverse('bookings:booking_success', kwargs={'code': booking.code}),
+            )
+            self.assertEqual(booking.payment_status, expected_status)
+            self.assertEqual(booking.payment_method, Booking.PAYMENT_METHOD_APPLE_PAY)
+            self.assertEqual(booking.payment_amount, booking.total_price)
+            self.assertEqual(booking.is_paid, action == 'success')
+            if action == 'cancel':
+                self.assertIsNone(booking.payment_id)
+            else:
+                self.assertTrue(booking.payment_id.startswith('SANDBOX-APPLE-'))
+
+    def test_payment_page_offers_separate_card_and_apple_pay_sandbox_choices(self):
+        booking = self.make_booking()
+        session = self.client.session
+        session['booking_codes'] = [booking.code]
+        session.save()
+
+        response = self.client.get(
+            reverse('bookings:booking_payment', kwargs={'code': booking.code})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Банковская карта (тест)')
+        self.assertContains(response, 'Apple Pay (sandbox)')
+        self.assertContains(response, 'apple-pay-sandbox-panel')
+        self.assertContains(response, 'реального платёжного шлюза нет')
+
+    def test_payment_method_and_status_are_shown_on_booking_detail_and_success(self):
+        booking = self.make_booking(
+            payment_method=Booking.PAYMENT_METHOD_APPLE_PAY,
+            payment_status=Booking.PAYMENT_PAID,
+            payment_amount=Decimal('300.00'),
+            payment_id='SANDBOX-APPLE-demo',
+            is_paid=True,
+        )
+        session = self.client.session
+        session['booking_codes'] = [booking.code]
+        session.save()
+
+        detail = self.client.get(
+            reverse('bookings:booking_detail', kwargs={'code': booking.code})
+        )
+        success = self.client.get(
+            reverse('bookings:booking_success', kwargs={'code': booking.code})
+        )
+
+        self.assertContains(detail, 'Apple Pay')
+        self.assertContains(detail, 'Оплачено')
+        self.assertContains(success, 'SANDBOX-APPLE-demo')
+        self.assertContains(success, 'Apple Pay')
+
+    def test_my_bookings_lists_payment_method_and_status(self):
+        user = get_user_model().objects.create_user(
+            username='applepay-guest',
+            email='applepay@example.com',
+            password='safe-test-password',
+        )
+        self.make_booking(
+            user=user,
+            payment_method=Booking.PAYMENT_METHOD_APPLE_PAY,
+            payment_status=Booking.PAYMENT_FAILED,
+            payment_amount=Decimal('300.00'),
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('bookings:my_bookings'))
+
+        self.assertContains(response, 'Apple Pay')
+        self.assertContains(response, 'Ошибка оплаты')
 
     @override_settings(PAYMENT_GATEWAY='simulation', PAYMENT_SIMULATION_ENABLED=True)
     def test_failed_or_cancelled_payment_does_not_mark_booking_as_paid(self):

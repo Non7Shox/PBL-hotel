@@ -23,13 +23,53 @@
         {% elif booking.status == 'cancelled' %}
           <div class="alert alert-warning" role="status">Отменённую бронь оплатить нельзя.</div>
         {% elif payment_simulation_enabled %}
-          <p class="small text-muted">Учебный режим не списывает деньги. Реальные платежи картой и Apple Pay не подключены.</p>
-          <form method="post" action="{% url 'bookings:payment_process' booking.code %}" class="d-flex flex-column gap-2">
+          <p class="small text-muted">Все сценарии учебные: деньги не списываются, реального платёжного шлюза нет.</p>
+          <form method="post" action="{% url 'bookings:payment_process' booking.code %}" id="sandboxPaymentForm">
             {% csrf_token %}
-            <input type="hidden" name="payment_method" value="test_gateway">
-            <button type="submit" name="action" value="success" class="btn btn-copper">Успешная тестовая оплата</button>
-            <button type="submit" name="action" value="fail" class="btn btn-outline-copper">Проверить ошибку оплаты</button>
-            <button type="submit" name="action" value="cancel" class="btn btn-outline-secondary">Отменить оплату</button>
+            <fieldset class="mb-4">
+              <legend class="h5">Способ оплаты</legend>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="payment_method" id="payment-card"
+                       value="card" {% if selected_payment_method == 'card' or selected_payment_method == 'test_gateway' %}checked{% endif %}>
+                <label class="form-check-label" for="payment-card">Банковская карта (тест)</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="payment_method" id="payment-apple-pay"
+                       value="apple_pay" {% if selected_payment_method == 'apple_pay' %}checked{% endif %}>
+                <label class="form-check-label" for="payment-apple-pay">Apple Pay (sandbox)</label>
+              </div>
+            </fieldset>
+
+            <section id="card-sandbox-panel" aria-labelledby="card-sandbox-title">
+              <h3 id="card-sandbox-title" class="h5">Тестовая карта</h3>
+              <p class="small text-muted">Выберите результат имитации. Данные карты не запрашиваются и не обрабатываются.</p>
+              <div class="d-flex flex-column gap-2">
+                <button type="submit" name="action" value="success" class="btn btn-copper">Успешная тестовая оплата</button>
+                <button type="submit" name="action" value="fail" class="btn btn-outline-copper">Смоделировать ошибку</button>
+                <button type="submit" name="action" value="cancel" class="btn btn-outline-secondary">Отменить оплату</button>
+              </div>
+            </section>
+
+            <section id="apple-pay-sandbox-panel" class="d-none mt-4" aria-labelledby="apple-pay-sandbox-title" aria-live="polite">
+              <div class="panel-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h3 id="apple-pay-sandbox-title" class="h5 mb-0">Apple Pay sandbox</h3>
+                  <span class="badge text-bg-secondary">DEMO</span>
+                </div>
+                <p class="small">Учебный платёж Aurelio Hotel</p>
+                <dl class="row small">
+                  <dt class="col-6">Бронь</dt><dd class="col-6">{{ booking.code }}</dd>
+                  <dt class="col-6">Сумма</dt><dd class="col-6">{{ currency }}{{ booking.total_price }}</dd>
+                  <dt class="col-6">Способ</dt><dd class="col-6">Apple Pay sandbox</dd>
+                </dl>
+                <p class="small text-muted">Это демонстрация интерфейса. Apple Merchant и реальные платежи не используются.</p>
+                <div class="d-flex flex-column gap-2">
+                  <button type="submit" name="action" value="success" class="btn btn-dark">Подтвердить учебный платёж</button>
+                  <button type="submit" name="action" value="fail" class="btn btn-outline-copper">Смоделировать ошибку</button>
+                  <button type="submit" name="action" value="cancel" class="btn btn-outline-secondary">Отменить</button>
+                </div>
+              </div>
+            </section>
           </form>
         {% else %}
           <p class="small text-muted">Оплата временно недоступна. Бронь пока не оплачена.</p>
@@ -40,4 +80,25 @@
     </div>
   </div>
 </main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    var methodInputs = document.querySelectorAll('input[name="payment_method"]');
+    var cardPanel = document.getElementById('card-sandbox-panel');
+    var applePayPanel = document.getElementById('apple-pay-sandbox-panel');
+
+    function updatePaymentPanels() {
+      var applePaySelected = document.getElementById('payment-apple-pay').checked;
+      applePayPanel.classList.toggle('d-none', !applePaySelected);
+      cardPanel.classList.toggle('d-none', applePaySelected);
+    }
+
+    methodInputs.forEach(function (input) {
+      input.addEventListener('change', updatePaymentPanels);
+    });
+    updatePaymentPanels();
+  })();
+</script>
 {% endblock %}
