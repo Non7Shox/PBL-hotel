@@ -79,10 +79,16 @@
                   <div><dt>Номер</dt><dd>{{ booking.room.title }}</dd></div>
                   <div><dt>Бронь</dt><dd>{{ booking.code }}</dd></div>
                   <div><dt>Даты</dt><dd>{{ booking.check_in|date:"d.m.Y" }} — {{ booking.check_out|date:"d.m.Y" }}</dd></div>
-                  <div><dt>Способ</dt><dd>Apple Pay sandbox</dd></div>
+                  <div><dt>Способ</dt><dd id="iphone-method-name">Apple Pay sandbox</dd></div>
                 </dl>
 
-                <p class="iphone-sandbox__notice">Демонстрация интерфейса. Нет связи с Apple Merchant и списания денег.</p>
+                <label class="iphone-sandbox__method-label" for="iphone-payment-method">Способ оплаты</label>
+                <select class="iphone-sandbox__method" id="iphone-payment-method">
+                  <option value="apple_pay">Apple Pay sandbox</option>
+                  <option value="card">Банковская карта (тест)</option>
+                </select>
+
+                <p class="iphone-sandbox__notice">Учебный сценарий: реальные средства не списываются. Подключения к Apple Merchant нет.</p>
 
                 <div class="iphone-sandbox__step" id="iphone-review-step">
                   <p class="small mb-3">Проверьте детали бронирования перед подтверждением.</p>
@@ -93,7 +99,7 @@
                   <div class="iphone-sandbox__faceid" id="iphone-faceid" aria-hidden="true">
                     <span></span><span></span><span></span>
                   </div>
-                  <p class="iphone-sandbox__confirm-copy" id="iphone-confirm-copy">Подтвердите учебный платёж</p>
+                  <p class="iphone-sandbox__confirm-copy" id="iphone-confirm-copy" role="status" aria-live="polite">Подтвердите учебный платёж</p>
                   <button type="button" class="iphone-sandbox__primary" id="iphone-confirm">
                     Подтвердить в sandbox
                   </button>
@@ -146,6 +152,13 @@
   .iphone-sandbox__details div{ display:flex; justify-content:space-between; gap:16px; padding:6px 0; }
   .iphone-sandbox__details dt{ color:#6b6b66; font-weight:400; }
   .iphone-sandbox__details dd{ margin:0; text-align:right; font-weight:500; }
+  .iphone-sandbox__method-label{ display:block; margin:16px 0 8px; color:#6b6b66; font-size:.875rem; }
+  .iphone-sandbox__method{
+    width:100%; min-height:48px; padding:8px 12px; color:#111110;
+    border:1px solid #e4e4df; border-radius:8px; background:#fff;
+    font:inherit;
+  }
+  .iphone-sandbox__method:focus-visible{ outline:3px solid #1f4d3f; outline-offset:3px; }
   .iphone-sandbox__notice{ margin:16px 0; color:#6b6b66; font-size:.75rem; }
   .iphone-sandbox__primary,.iphone-sandbox__secondary{
     display:block; width:100%; min-height:48px; margin-top:8px; padding:8px 12px;
@@ -214,12 +227,31 @@
     var outcomes = document.getElementById('iphone-outcomes');
     var faceId = document.getElementById('iphone-faceid');
     var confirmCopy = document.getElementById('iphone-confirm-copy');
+    var methodSelector = document.getElementById('iphone-payment-method');
+    var methodName = document.getElementById('iphone-method-name');
     var mobileDevice = window.matchMedia('(max-width: 767px)').matches ||
       /iPhone|iPod|Android.*Mobile/i.test(navigator.userAgent);
+
+    function syncMethodFromPage() {
+      methodSelector.value = applePayChoice.checked ? 'apple_pay' : 'card';
+    }
+
+    function syncMethodToPage() {
+      var selectedInput = document.getElementById(
+        methodSelector.value === 'apple_pay' ? 'payment-apple-pay' : 'payment-card'
+      );
+      selectedInput.checked = true;
+      selectedInput.dispatchEvent(new Event('change', {bubbles: true}));
+      methodName.textContent = methodSelector.value === 'apple_pay'
+        ? 'Apple Pay sandbox'
+        : 'Банковская карта (тест)';
+    }
 
     function openSandbox() {
       applePayChoice.checked = true;
       applePayChoice.dispatchEvent(new Event('change', {bubbles: true}));
+      syncMethodFromPage();
+      syncMethodToPage();
       sandbox.classList.add('is-open');
       sandbox.setAttribute('aria-hidden', 'false');
       document.body.classList.add('iphone-sandbox-open');
@@ -233,6 +265,10 @@
       openButton.focus();
     }
 
+    methodInputs.forEach(function (input) {
+      input.addEventListener('change', syncMethodFromPage);
+    });
+    methodSelector.addEventListener('change', syncMethodToPage);
     openButton.addEventListener('click', openSandbox);
     closeButton.addEventListener('click', closeSandbox);
     continueButton.addEventListener('click', function () {
@@ -241,11 +277,15 @@
       confirmButton.focus();
     });
     confirmButton.addEventListener('click', function () {
+      confirmButton.disabled = true;
       confirmButton.classList.add('d-none');
       faceId.classList.add('is-confirmed');
-      confirmCopy.textContent = 'Учебное подтверждение завершено';
-      outcomes.classList.remove('d-none');
-      outcomes.querySelector('button').focus();
+      confirmCopy.textContent = 'Проверяем учебное подтверждение…';
+      window.setTimeout(function () {
+        confirmCopy.textContent = 'Подтверждение выполнено в sandbox. Выберите результат.';
+        outcomes.classList.remove('d-none');
+        outcomes.querySelector('button').focus();
+      }, 700);
     });
     sandbox.addEventListener('click', function (event) {
       if (event.target.classList.contains('iphone-sandbox__backdrop')) closeSandbox();

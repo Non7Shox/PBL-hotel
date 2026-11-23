@@ -320,6 +320,24 @@ class BookingFlowTests(BookingTestMixin, TestCase):
             else:
                 self.assertTrue(booking.payment_id.startswith('SANDBOX-APPLE-'))
 
+    @override_settings(PAYMENT_GATEWAY='simulation', PAYMENT_SIMULATION_ENABLED=True)
+    def test_mobile_sandbox_test_card_choice_is_persisted(self):
+        booking = self.make_booking()
+        session = self.client.session
+        session['booking_codes'] = [booking.code]
+        session.save()
+
+        self.client.post(
+            reverse('bookings:payment_process', kwargs={'code': booking.code}),
+            {'action': 'success', 'payment_method': Booking.PAYMENT_METHOD_CARD},
+        )
+
+        booking.refresh_from_db()
+        self.assertEqual(booking.payment_method, Booking.PAYMENT_METHOD_CARD)
+        self.assertEqual(booking.payment_status, Booking.PAYMENT_PAID)
+        self.assertTrue(booking.is_paid)
+        self.assertTrue(booking.payment_id.startswith('SANDBOX-CARD-'))
+
     def test_payment_page_offers_separate_card_and_apple_pay_sandbox_choices(self):
         booking = self.make_booking()
         session = self.client.session
@@ -352,8 +370,12 @@ class BookingFlowTests(BookingTestMixin, TestCase):
         self.assertContains(response, 'id="iphone-review-step"')
         self.assertContains(response, 'id="iphone-confirm-step"')
         self.assertContains(response, 'id="iphone-outcomes"')
+        self.assertContains(response, 'id="iphone-payment-method"')
+        self.assertContains(response, 'Банковская карта (тест)')
+        self.assertContains(response, 'реальные средства не списываются')
         self.assertContains(response, 'window.matchMedia')
         self.assertContains(response, 'Подтвердить в sandbox')
+        self.assertContains(response, 'Проверяем учебное подтверждение')
         self.assertContains(response, 'name="action" value="success"')
         self.assertContains(response, 'name="action" value="fail"')
         self.assertContains(response, 'name="action" value="cancel"')
