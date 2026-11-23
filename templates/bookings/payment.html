@@ -52,63 +52,97 @@
 
             <section id="apple-pay-sandbox-panel" class="d-none mt-4" aria-labelledby="apple-pay-sandbox-title">
               <h3 id="apple-pay-sandbox-title" class="h5">Apple Pay sandbox</h3>
-              <p class="small text-muted">Откройте демо экран iPhone, чтобы пройти пошаговое подтверждение.</p>
-              <button type="button" class="btn btn-dark" id="open-iphone-sandbox">Открыть демо на iPhone</button>
+              <p class="small text-muted">Интерактивная демонстрация оплаты для телефона и компьютера. Платёж не выполняется.</p>
+              <button type="button" class="btn btn-dark" id="open-iphone-sandbox">Открыть демо Apple Pay</button>
             </section>
 
             <section class="iphone-sandbox" id="iphone-sandbox" role="dialog" aria-modal="true"
                      aria-labelledby="iphone-sandbox-title" aria-hidden="true">
               <div class="iphone-sandbox__backdrop"></div>
               <div class="iphone-sandbox__sheet">
-                <div class="iphone-sandbox__handle" aria-hidden="true"></div>
-                <header class="iphone-sandbox__header">
-                  <div>
-                    <p class="iphone-sandbox__eyebrow">Aurelio Hotel · SANDBOX</p>
-                    <h2 id="iphone-sandbox-title">Apple Pay</h2>
+                <div class="iphone-sandbox__desktop-art" aria-hidden="true">
+                  <div class="iphone-sandbox__rings">
+                    <span></span><span></span><span></span><span></span>
+                    <b>Pay</b>
                   </div>
-                  <button type="button" class="iphone-sandbox__close" id="close-iphone-sandbox" aria-label="Закрыть демо">×</button>
-                </header>
-
-                <div class="iphone-sandbox__total">
-                  <span>К оплате</span>
-                  <strong>{{ currency }}{{ booking.total_price }}</strong>
+                  <span class="iphone-sandbox__desktop-label">SANDBOX</span>
                 </div>
 
-                <dl class="iphone-sandbox__details">
-                  <div><dt>Отель</dt><dd>Aurelio Hotel</dd></div>
-                  <div><dt>Номер</dt><dd>{{ booking.room.title }}</dd></div>
-                  <div><dt>Бронь</dt><dd>{{ booking.code }}</dd></div>
-                  <div><dt>Даты</dt><dd>{{ booking.check_in|date:"d.m.Y" }} — {{ booking.check_out|date:"d.m.Y" }}</dd></div>
-                  <div><dt>Способ</dt><dd id="iphone-method-name">Apple Pay sandbox</dd></div>
-                </dl>
+                <div class="iphone-sandbox__content">
+                  <div class="iphone-sandbox__handle" aria-hidden="true"></div>
+                  <header class="iphone-sandbox__header">
+                    <div class="iphone-sandbox__brand">
+                      <span class="iphone-sandbox__pay-mark" aria-hidden="true">Pay</span>
+                      <div>
+                        <p class="iphone-sandbox__eyebrow">Учебная оплата</p>
+                        <h2 id="iphone-sandbox-title">Apple Pay <span>Sandbox</span></h2>
+                      </div>
+                    </div>
+                    <button type="button" class="iphone-sandbox__close" id="close-iphone-sandbox" aria-label="Закрыть демо">×</button>
+                  </header>
 
-                <label class="iphone-sandbox__method-label" for="iphone-payment-method">Способ оплаты</label>
-                <select class="iphone-sandbox__method" id="iphone-payment-method">
-                  <option value="apple_pay">Apple Pay sandbox</option>
-                  <option value="card">Банковская карта (тест)</option>
-                </select>
-
-                <p class="iphone-sandbox__notice">Учебный сценарий: реальные средства не списываются. Подключения к Apple Merchant нет.</p>
-
-                <div class="iphone-sandbox__step" id="iphone-review-step">
-                  <p class="small mb-3">Проверьте детали бронирования перед подтверждением.</p>
-                  <button type="button" class="iphone-sandbox__primary" id="iphone-continue">Продолжить</button>
-                </div>
-
-                <div class="iphone-sandbox__step d-none" id="iphone-confirm-step" aria-live="polite">
-                  <div class="iphone-sandbox__faceid" id="iphone-faceid" aria-hidden="true">
-                    <span></span><span></span><span></span>
+                  <div class="iphone-sandbox__merchant">
+                    <span>Оплата бронирования</span>
+                    <strong>Aurelio Hotel</strong>
                   </div>
-                  <p class="iphone-sandbox__confirm-copy" id="iphone-confirm-copy" role="status" aria-live="polite">Подтвердите учебный платёж</p>
-                  <button type="button" class="iphone-sandbox__primary" id="iphone-confirm">
-                    Подтвердить в sandbox
-                  </button>
-                  <div class="iphone-sandbox__outcomes d-none" id="iphone-outcomes">
-                    <p class="small text-success mb-2" role="status">Подтверждение выполнено в sandbox. Выберите результат сценария.</p>
-                    <button type="submit" name="action" value="success" class="iphone-sandbox__primary">Завершить успешно</button>
-                    <button type="submit" name="action" value="fail" class="iphone-sandbox__secondary">Смоделировать ошибку</button>
-                    <button type="submit" name="action" value="cancel" class="iphone-sandbox__secondary">Отменить платёж</button>
+                  <div class="iphone-sandbox__total">
+                    <span>Итого</span>
+                    <strong>{{ currency }}{{ booking.total_price }}</strong>
                   </div>
+
+                  <div class="iphone-sandbox__cards" aria-label="Демонстрационные карты">
+                    <button type="button" class="iphone-sandbox__card is-selected" data-card-name="Demo Card" data-card-digits="6479" aria-pressed="true">
+                      <span>DEMO</span><strong>•••• 6479</strong><small>TEST CARD</small>
+                    </button>
+                    <button type="button" class="iphone-sandbox__card iphone-sandbox__card--second" data-card-name="Demo Card" data-card-digits="2184" aria-pressed="false">
+                      <span>DEMO</span><strong>•••• 2184</strong><small>TEST CARD</small>
+                    </button>
+                    <button type="button" class="iphone-sandbox__card iphone-sandbox__card--third" data-card-name="Demo Card" data-card-digits="9306" aria-pressed="false">
+                      <span>DEMO</span><strong>•••• 9306</strong><small>TEST CARD</small>
+                    </button>
+                  </div>
+                  <p class="iphone-sandbox__card-hint">Нажмите на карту, чтобы выбрать тестовый вариант</p>
+
+                  <label class="iphone-sandbox__method-label" for="iphone-payment-method">Способ оплаты</label>
+                  <select class="iphone-sandbox__method" id="iphone-payment-method">
+                    <option value="apple_pay">Apple Pay sandbox</option>
+                    <option value="card">Банковская карта (тест)</option>
+                  </select>
+
+                  <div class="iphone-sandbox__booking">
+                    <span>Бронь {{ booking.code }}</span>
+                    <span>{{ booking.check_in|date:"d.m.Y" }} — {{ booking.check_out|date:"d.m.Y" }}</span>
+                  </div>
+
+                  <p class="iphone-sandbox__notice">Демонстрация интерфейса. Реальные средства не списываются, подключение к Apple Merchant отсутствует.</p>
+
+                  <div class="iphone-sandbox__step" id="iphone-review-step">
+                    <button type="button" class="iphone-sandbox__primary" id="iphone-continue">
+                      <span id="iphone-pay-label">Заплатить {{ currency }}{{ booking.total_price }}</span>
+                      <span aria-hidden="true">›</span>
+                    </button>
+                  </div>
+
+                  <div class="iphone-sandbox__step d-none" id="iphone-confirm-step" aria-live="polite">
+                    <div class="iphone-sandbox__processing" id="iphone-faceid" aria-hidden="true">
+                      <span></span>
+                    </div>
+                    <p class="iphone-sandbox__confirm-copy" id="iphone-confirm-copy" role="status" aria-live="polite">Обработка учебного платежа</p>
+                    <button type="button" class="iphone-sandbox__primary" id="iphone-confirm">
+                      Подтвердить операцию sandbox
+                    </button>
+                    <div class="iphone-sandbox__outcomes d-none" id="iphone-outcomes">
+                      <p class="small mb-2" role="status">Выберите результат демонстрационного сценария.</p>
+                      <button type="submit" name="action" value="success" class="iphone-sandbox__primary">Смоделировать успешную оплату</button>
+                      <button type="submit" name="action" value="fail" class="iphone-sandbox__secondary">Смоделировать ошибку</button>
+                      <button type="submit" name="action" value="cancel" class="iphone-sandbox__secondary">Отменить</button>
+                    </div>
+                  </div>
+
+                  <dl class="iphone-sandbox__summary">
+                    <div><dt>Итого</dt><dd>{{ currency }}{{ booking.total_price }}</dd></div>
+                    <div><dt>Магазин</dt><dd>Aurelio Hotel</dd></div>
+                  </dl>
                 </div>
               </div>
             </section>
@@ -132,69 +166,117 @@
   }
   .iphone-sandbox__backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.58); }
   .iphone-sandbox__sheet{
-    position:relative; width:min(100%, 520px); max-height:calc(100dvh - 24px);
-    overflow-y:auto; padding:8px 24px calc(24px + env(safe-area-inset-bottom));
-    color:#111110; background:#f6f6f4; border-radius:16px 16px 0 0;
-    box-shadow:0 12px 48px rgba(0,0,0,.24);
+    position:relative; display:block; width:min(100%, 520px); max-height:calc(100dvh - 24px);
+    overflow-y:auto; color:#fff; background:#181818; border-radius:24px 24px 0 0;
+    box-shadow:0 12px 48px rgba(0,0,0,.3);
   }
-  .iphone-sandbox__handle{ width:40px; height:4px; margin:0 auto 16px; border-radius:999px; background:#cbcbc5; }
+  .iphone-sandbox__desktop-art{ display:none; }
+  .iphone-sandbox__content{ padding:8px 24px calc(24px + env(safe-area-inset-bottom)); }
+  .iphone-sandbox__handle{ width:40px; height:4px; margin:0 auto 16px; border-radius:999px; background:#6b6b6b; }
   .iphone-sandbox__header{ display:flex; justify-content:space-between; align-items:center; gap:16px; }
-  .iphone-sandbox__eyebrow{ margin:0 0 4px; color:#6b6b66; font-size:.75rem; letter-spacing:.04em; }
-  .iphone-sandbox__header h2{ margin:0; font-size:1.5rem; font-weight:600; }
+  .iphone-sandbox__brand{ display:flex; align-items:center; gap:12px; }
+  .iphone-sandbox__pay-mark{ font-size:1.25rem; font-weight:600; letter-spacing:-.06em; }
+  .iphone-sandbox__eyebrow{ margin:0 0 4px; color:#a5a5a5; font-size:.75rem; letter-spacing:.04em; }
+  .iphone-sandbox__header h2{ margin:0; font-size:1.25rem; font-weight:600; }
+  .iphone-sandbox__header h2 span{ color:#a5a5a5; font-size:.875rem; font-weight:400; }
   .iphone-sandbox__close{
-    width:40px; height:40px; border:0; border-radius:50%; color:#3f3f3c;
-    background:#e4e4df; font-size:1.5rem; line-height:1;
+    flex:0 0 40px; width:40px; height:40px; border:0; border-radius:50%; color:#fff;
+    background:#313131; font-size:1.5rem; line-height:1;
   }
-  .iphone-sandbox__total{ display:flex; justify-content:space-between; align-items:baseline; margin:24px 0 16px; }
-  .iphone-sandbox__total span{ color:#6b6b66; font-size:.875rem; }
-  .iphone-sandbox__total strong{ font-size:1.875rem; font-weight:600; }
-  .iphone-sandbox__details{ margin:0; padding:16px; border-radius:12px; background:#fff; }
-  .iphone-sandbox__details div{ display:flex; justify-content:space-between; gap:16px; padding:6px 0; }
-  .iphone-sandbox__details dt{ color:#6b6b66; font-weight:400; }
-  .iphone-sandbox__details dd{ margin:0; text-align:right; font-weight:500; }
-  .iphone-sandbox__method-label{ display:block; margin:16px 0 8px; color:#6b6b66; font-size:.875rem; }
+  .iphone-sandbox__merchant{ display:flex; flex-direction:column; gap:4px; margin-top:24px; color:#a5a5a5; text-align:center; font-size:.875rem; }
+  .iphone-sandbox__merchant strong{ color:#fff; font-size:1rem; font-weight:500; }
+  .iphone-sandbox__total{ display:flex; justify-content:center; align-items:baseline; gap:8px; margin:8px 0 16px; }
+  .iphone-sandbox__total span{ color:#a5a5a5; font-size:.875rem; }
+  .iphone-sandbox__total strong{ font-size:2rem; font-weight:600; letter-spacing:-.03em; }
+  .iphone-sandbox__cards{
+    display:flex; gap:8px; overflow-x:auto; padding:4px 2px 8px;
+    scroll-snap-type:x mandatory; scrollbar-width:thin;
+  }
+  .iphone-sandbox__card{
+    display:flex; flex:0 0 138px; min-height:88px; flex-direction:column;
+    justify-content:space-between; padding:8px 10px; color:#fff; text-align:left;
+    border:2px solid transparent; border-radius:12px; background:#313131;
+    scroll-snap-align:center; transition:transform 500ms cubic-bezier(.22,1,.36,1), border-color 300ms;
+  }
+  .iphone-sandbox__card:nth-child(2){ background:#272727; }
+  .iphone-sandbox__card:nth-child(3){ background:#1f1f1f; }
+  .iphone-sandbox__card.is-selected{ border-color:#fff; transform:translateY(-2px); }
+  .iphone-sandbox__card span{ color:#d5d5d5; font-size:.75rem; letter-spacing:.08em; }
+  .iphone-sandbox__card strong{ font-size:.875rem; font-weight:600; }
+  .iphone-sandbox__card small{ color:#a5a5a5; font-size:.625rem; letter-spacing:.08em; }
+  .iphone-sandbox__card-hint{ margin:4px 0 0; color:#a5a5a5; text-align:center; font-size:.75rem; }
+  .iphone-sandbox__method-label{ display:block; margin:16px 0 8px; color:#a5a5a5; font-size:.875rem; }
   .iphone-sandbox__method{
-    width:100%; min-height:48px; padding:8px 12px; color:#111110;
-    border:1px solid #e4e4df; border-radius:8px; background:#fff;
-    font:inherit;
+    width:100%; min-height:48px; padding:8px 12px; color:#fff;
+    border:1px solid #4a4a4a; border-radius:8px; background:#272727; font:inherit;
   }
-  .iphone-sandbox__method:focus-visible{ outline:3px solid #1f4d3f; outline-offset:3px; }
-  .iphone-sandbox__notice{ margin:16px 0; color:#6b6b66; font-size:.75rem; }
+  .iphone-sandbox__method:focus-visible,.iphone-sandbox__card:focus-visible{
+    outline:3px solid #fff; outline-offset:3px;
+  }
+  .iphone-sandbox__booking{
+    display:flex; justify-content:space-between; gap:12px; margin-top:16px;
+    color:#a5a5a5; font-size:.75rem;
+  }
+  .iphone-sandbox__notice{ margin:16px 0 8px; color:#a5a5a5; font-size:.75rem; text-wrap:pretty; }
   .iphone-sandbox__primary,.iphone-sandbox__secondary{
-    display:block; width:100%; min-height:48px; margin-top:8px; padding:8px 12px;
-    border:0; border-radius:12px; font-size:1rem; font-weight:600;
+    display:flex; width:100%; min-height:48px; align-items:center; justify-content:center;
+    gap:8px; margin-top:8px; padding:8px 12px; border:0; border-radius:12px;
+    font-size:1rem; font-weight:600;
     transition:transform 500ms cubic-bezier(.22,1,.36,1), background-color 300ms;
   }
-  .iphone-sandbox__primary{ color:#fff; background:#000; }
-  .iphone-sandbox__secondary{ color:#111110; background:#e4e4df; }
+  .iphone-sandbox__primary{ color:#111; background:#fff; }
+  .iphone-sandbox__primary:hover{ background:#e8e8e8; }
+  .iphone-sandbox__secondary{ color:#fff; background:#313131; }
+  .iphone-sandbox__secondary:hover{ background:#3f3f3f; }
   .iphone-sandbox__primary:hover,.iphone-sandbox__secondary:hover{ transform:translateY(-1px); }
   .iphone-sandbox__primary:active,.iphone-sandbox__secondary:active{ transform:scale(.98); }
   .iphone-sandbox__primary:focus-visible,.iphone-sandbox__secondary:focus-visible,.iphone-sandbox__close:focus-visible{
-    outline:3px solid #1f4d3f; outline-offset:3px;
+    outline:3px solid #a5a5a5; outline-offset:3px;
   }
-  .iphone-sandbox__faceid{
-    display:flex; justify-content:center; gap:8px; margin:8px auto 16px;
-    color:#1f4d3f;
+  .iphone-sandbox__processing{ display:flex; justify-content:center; margin:12px auto; }
+  .iphone-sandbox__processing span{
+    width:24px; height:24px; border:3px solid #4a4a4a; border-top-color:#fff;
+    border-radius:50%; animation:iphone-sandbox-spin 900ms cubic-bezier(.22,1,.36,1) infinite;
   }
-  .iphone-sandbox__faceid span{
-    width:8px; height:8px; border:2px solid currentColor; border-radius:50%;
-    animation:iphone-sandbox-pulse 1200ms cubic-bezier(.22,1,.36,1) infinite alternate;
-  }
-  .iphone-sandbox__faceid span:nth-child(2){ animation-delay:150ms; }
-  .iphone-sandbox__faceid span:nth-child(3){ animation-delay:300ms; }
-  .iphone-sandbox__confirm-copy{ text-align:center; font-weight:500; }
+  .iphone-sandbox__confirm-copy{ color:#d5d5d5; text-align:center; font-weight:500; }
   .iphone-sandbox__outcomes{ margin-top:16px; }
+  .iphone-sandbox__summary{ margin:20px 0 0; padding-top:12px; border-top:1px solid #313131; }
+  .iphone-sandbox__summary div{ display:flex; justify-content:space-between; gap:12px; padding:4px 0; }
+  .iphone-sandbox__summary dt,.iphone-sandbox__summary dd{ margin:0; color:#a5a5a5; font-size:.75rem; }
   body.iphone-sandbox-open{ overflow:hidden; }
-  @keyframes iphone-sandbox-pulse{ from{ opacity:.35; transform:scale(.85); } to{ opacity:1; transform:scale(1.15); } }
+  @keyframes iphone-sandbox-spin{ to{ transform:rotate(360deg); } }
   @media (min-width:768px){
-    .iphone-sandbox{ align-items:center; }
-    .iphone-sandbox__sheet{ border-radius:16px; padding-top:16px; }
+    .iphone-sandbox.is-open{ align-items:center; padding:24px; }
+    .iphone-sandbox__sheet{
+      display:grid; grid-template-columns:minmax(240px, .9fr) minmax(380px, 1.1fr);
+      width:min(100%, 900px); max-height:calc(100dvh - 48px); border-radius:24px;
+    }
+    .iphone-sandbox__desktop-art{
+      display:flex; min-height:620px; flex-direction:column; align-items:center;
+      justify-content:center; gap:24px; padding:32px; border-radius:24px 0 0 24px;
+      background:#222;
+    }
+    .iphone-sandbox__rings{ position:relative; display:grid; width:240px; height:240px; place-items:center; }
+    .iphone-sandbox__rings span{
+      position:absolute; inset:calc(var(--ring) * 22px); border:8px dashed #dedede;
+      border-radius:50%; animation:iphone-sandbox-spin calc(10s + var(--ring) * 3s) cubic-bezier(.22,1,.36,1) infinite;
+    }
+    .iphone-sandbox__rings span:nth-child(1){ --ring:0; border-color:#8b8b8b; }
+    .iphone-sandbox__rings span:nth-child(2){ --ring:1; border-color:#e4e4e4; animation-direction:reverse; }
+    .iphone-sandbox__rings span:nth-child(3){ --ring:2; border-color:#a5a5a5; }
+    .iphone-sandbox__rings span:nth-child(4){ --ring:3; border-color:#fff; animation-direction:reverse; }
+    .iphone-sandbox__rings b{
+      display:grid; width:72px; height:72px; place-items:center; color:#111;
+      border-radius:50%; background:#fff; font-size:1.125rem; font-weight:600;
+    }
+    .iphone-sandbox__desktop-label{ color:#a5a5a5; font-size:.75rem; letter-spacing:.16em; }
+    .iphone-sandbox__content{ overflow-y:auto; padding:24px; }
   }
   @media (prefers-reduced-motion:reduce){
-    .iphone-sandbox__faceid span{ animation:none; opacity:.7; }
-    .iphone-sandbox__primary,.iphone-sandbox__secondary{ transition:opacity 300ms; }
-      .iphone-sandbox__primary:hover,.iphone-sandbox__secondary:hover,
-      .iphone-sandbox__primary:active,.iphone-sandbox__secondary:active{ transform:none; }
+    .iphone-sandbox__rings span,.iphone-sandbox__processing span{ animation:none; }
+    .iphone-sandbox__primary,.iphone-sandbox__secondary,.iphone-sandbox__card{ transition:opacity 300ms; }
+    .iphone-sandbox__primary:hover,.iphone-sandbox__secondary:hover,.iphone-sandbox__primary:active,
+    .iphone-sandbox__secondary:active,.iphone-sandbox__card.is-selected{ transform:none; }
   }
 {% endblock %}
 
@@ -228,7 +310,7 @@
     var faceId = document.getElementById('iphone-faceid');
     var confirmCopy = document.getElementById('iphone-confirm-copy');
     var methodSelector = document.getElementById('iphone-payment-method');
-    var methodName = document.getElementById('iphone-method-name');
+    var demoCards = sandbox.querySelectorAll('.iphone-sandbox__card');
     var mobileDevice = window.matchMedia('(max-width: 767px)').matches ||
       /iPhone|iPod|Android.*Mobile/i.test(navigator.userAgent);
 
@@ -241,17 +323,20 @@
         methodSelector.value === 'apple_pay' ? 'payment-apple-pay' : 'payment-card'
       );
       selectedInput.checked = true;
-      selectedInput.dispatchEvent(new Event('change', {bubbles: true}));
-      methodName.textContent = methodSelector.value === 'apple_pay'
-        ? 'Apple Pay sandbox'
-        : 'Банковская карта (тест)';
+      updatePaymentPanels();
     }
 
     function openSandbox() {
       applePayChoice.checked = true;
-      applePayChoice.dispatchEvent(new Event('change', {bubbles: true}));
+      updatePaymentPanels();
       syncMethodFromPage();
-      syncMethodToPage();
+      reviewStep.classList.remove('d-none');
+      confirmStep.classList.add('d-none');
+      confirmButton.disabled = false;
+      confirmButton.classList.remove('d-none');
+      outcomes.classList.add('d-none');
+      confirmCopy.textContent = 'Обработка учебного платежа';
+      faceId.classList.remove('is-confirmed');
       sandbox.classList.add('is-open');
       sandbox.setAttribute('aria-hidden', 'false');
       document.body.classList.add('iphone-sandbox-open');
@@ -262,13 +347,32 @@
       sandbox.classList.remove('is-open');
       sandbox.setAttribute('aria-hidden', 'true');
       document.body.classList.remove('iphone-sandbox-open');
-      openButton.focus();
+      document.getElementById(
+        methodSelector.value === 'apple_pay' ? 'payment-apple-pay' : 'payment-card'
+      ).focus();
     }
 
     methodInputs.forEach(function (input) {
-      input.addEventListener('change', syncMethodFromPage);
+      input.addEventListener('change', function () {
+        updatePaymentPanels();
+        syncMethodFromPage();
+        if (input === applePayChoice && input.checked) {
+          openSandbox();
+        } else if (input.checked && sandbox.classList.contains('is-open')) {
+          closeSandbox();
+        }
+      });
     });
     methodSelector.addEventListener('change', syncMethodToPage);
+    demoCards.forEach(function (card) {
+      card.addEventListener('click', function () {
+        demoCards.forEach(function (item) {
+          var selected = item === card;
+          item.classList.toggle('is-selected', selected);
+          item.setAttribute('aria-pressed', selected ? 'true' : 'false');
+        });
+      });
+    });
     openButton.addEventListener('click', openSandbox);
     closeButton.addEventListener('click', closeSandbox);
     continueButton.addEventListener('click', function () {
@@ -280,9 +384,9 @@
       confirmButton.disabled = true;
       confirmButton.classList.add('d-none');
       faceId.classList.add('is-confirmed');
-      confirmCopy.textContent = 'Проверяем учебное подтверждение…';
+      confirmCopy.textContent = 'Обработка платежа в sandbox…';
       window.setTimeout(function () {
-        confirmCopy.textContent = 'Подтверждение выполнено в sandbox. Выберите результат.';
+        confirmCopy.textContent = 'Выберите результат демонстрационного сценария.';
         outcomes.classList.remove('d-none');
         outcomes.querySelector('button').focus();
       }, 700);
@@ -294,7 +398,7 @@
       if (event.key === 'Escape' && sandbox.classList.contains('is-open')) closeSandbox();
       if (event.key === 'Tab' && sandbox.classList.contains('is-open')) {
         var controls = Array.prototype.slice.call(
-          sandbox.querySelectorAll('button:not([disabled])')
+          sandbox.querySelectorAll('button:not([disabled]), select:not([disabled])')
         ).filter(function (control) {
           return control.offsetParent !== null;
         });

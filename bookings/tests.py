@@ -371,14 +371,37 @@ class BookingFlowTests(BookingTestMixin, TestCase):
         self.assertContains(response, 'id="iphone-confirm-step"')
         self.assertContains(response, 'id="iphone-outcomes"')
         self.assertContains(response, 'id="iphone-payment-method"')
+        self.assertContains(response, 'iphone-sandbox__desktop-art')
+        self.assertContains(response, 'data-card-digits="6479"')
+        self.assertContains(response, 'data-card-digits="2184"')
+        self.assertContains(response, 'Оплата бронирования')
         self.assertContains(response, 'Банковская карта (тест)')
-        self.assertContains(response, 'реальные средства не списываются')
+        self.assertContains(response, 'Реальные средства не списываются')
         self.assertContains(response, 'window.matchMedia')
-        self.assertContains(response, 'Подтвердить в sandbox')
-        self.assertContains(response, 'Проверяем учебное подтверждение')
+        self.assertContains(response, 'Заплатить')
+        self.assertContains(response, 'Итого')
+        self.assertContains(response, 'Обработка платежа в sandbox')
         self.assertContains(response, 'name="action" value="success"')
         self.assertContains(response, 'name="action" value="fail"')
         self.assertContains(response, 'name="action" value="cancel"')
+
+    def test_desktop_payment_page_has_manual_apple_pay_demo_entry(self):
+        booking = self.make_booking()
+        session = self.client.session
+        session['booking_codes'] = [booking.code]
+        session.save()
+
+        response = self.client.get(
+            reverse('bookings:booking_payment', kwargs={'code': booking.code}),
+            HTTP_USER_AGENT='Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Открыть демо Apple Pay')
+        self.assertContains(response, 'iphone-sandbox__rings')
+        self.assertContains(response, 'Смоделировать успешную оплату')
+        self.assertContains(response, 'Смоделировать ошибку')
+        self.assertContains(response, 'Отменить')
 
     def test_payment_method_and_status_are_shown_on_booking_detail_and_success(self):
         booking = self.make_booking(
