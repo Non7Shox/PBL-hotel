@@ -4,6 +4,7 @@ from datetime import timedelta
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
+from django.core import signing
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
@@ -66,6 +67,9 @@ class BookingViewsTestCase(TestCase):
 class BookingTestMixin:
     def setUp(self):
         self.client = Client()
+        self.client.defaults['HTTP_USER_AGENT'] = (
+            'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)'
+        )
         self.floor = Floor.objects.create(number=1, title="Первый этаж")
         self.room = Room.objects.create(
             floor=self.floor,
@@ -402,6 +406,104 @@ class BookingFlowTests(BookingTestMixin, TestCase):
         self.assertContains(response, 'Смоделировать успешную оплату')
         self.assertContains(response, 'Смоделировать ошибку')
         self.assertContains(response, 'Отменить')
+
+    def test_desktop_payment_page_shows_qr_instead_of_payment_controls(self):
+        booking = self.make_booking()
+        session = self.client.session
+        session['booking_codes'] = [booking.code]
+        session.save()
+
+        response = self.client.get(
+            reverse('bookings:booking_payment', kwargs={'code': booking.code}),
+            HTTP_USER_AGENT='Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Продолжите оплату на телефоне')
+        self.assertContains(
+            response,
+            reverse('bookings:booking_payment_qr', kwargs={'code': booking.code}),
+        )
+        self.assertContains(response, '.desktop-qr-panel')
+        self.assertContains(response, '#card-sandbox-panel')
+
+    def test_qr_image_is_available_to_booking_owner(self):
+        booking = self.make_booking()
+        session = self.client.session
+        session['booking_codes'] = [booking.code]
+        session.save()
+
+        response = self.client.get(
+            reverse('bookings:booking_payment_qr', kwargs={'code': booking.code}),
+            HTTP_USER_AGENT='Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'image/svg+xml')
+        self.assertIn(b'<svg', response.content)
+
+    @override_settings(PAYMENT_GATEWAY='simulation', PAYMENT_SIMULATION_ENABLED=True)
+    def test_qr_token_grants_mobile_access_and_allows_sandbox_payment(self):
+        booking = self.make_booking()
+        token = signing.dumps(booking.code, salt='bookings.payment_qr', compress=True)
+        payment_url = reverse('bookings:booking_payment', kwargs={'code': booking.code})
+
+        response = self.client.get(
+            f'{payment_url}?qr={token}',
+            HTTP_USER_AGENT='Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(booking.code, self.client.session['booking_codes'])
+        self.assertIn(booking.code, self.client.session['qr_payment_codes'])
+
+        response = self.client.post(
+            reverse('bookings:payment_process', kwargs={'code': booking.code}),
+            {'action': 'success', 'payment_method': Booking.PAYMENT_METHOD_APPLE_PAY},
+            HTTP_USER_AGENT='Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',
+        )
+
+        booking.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(booking.payment_status, Booking.PAYMENT_PAID)
+        self.assertEqual(booking.payment_method, Booking.PAYMENT_METHOD_APPLE_PAY)
+
+    def test_invalid_or_desktop_qr_token_cannot_grant_payment_access(self):
+        booking = self.make_booking()
+        payment_url = reverse('bookings:booking_payment', kwargs={'code': booking.code})
+        token = signing.dumps(booking.code, salt='bookings.payment_qr', compress=True)
+
+        self.assertEqual(
+            self.client.get(
+                f'{payment_url}?qr=invalid',
+                HTTP_USER_AGENT='Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',
+            ).status_code,
+            404,
+        )
+        self.assertEqual(
+            self.client.get(
+                f'{payment_url}?qr={token}',
+                HTTP_USER_AGENT='Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0',
+            ).status_code,
+            404,
+        )
+
+    @override_settings(PAYMENT_GATEWAY='simulation', PAYMENT_SIMULATION_ENABLED=True)
+    def test_desktop_cannot_submit_payment_without_mobile_qr_scan(self):
+        booking = self.make_booking()
+        session = self.client.session
+        session['booking_codes'] = [booking.code]
+        session.save()
+
+        self.client.post(
+            reverse('bookings:payment_process', kwargs={'code': booking.code}),
+            {'action': 'success', 'payment_method': Booking.PAYMENT_METHOD_APPLE_PAY},
+            HTTP_USER_AGENT='Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0',
+        )
+
+        booking.refresh_from_db()
+        self.assertEqual(booking.payment_status, Booking.PAYMENT_UNPAID)
 
     def test_payment_method_and_status_are_shown_on_booking_detail_and_success(self):
         booking = self.make_booking(
