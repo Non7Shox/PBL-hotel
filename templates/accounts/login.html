@@ -56,17 +56,6 @@
         <a href="{% url 'accounts:signup' %}" class="btn btn-outline-copper w-100 mb-2">Создать аккаунт</a>
         <a href="{% url 'bookings:booking_lookup' %}" class="btn btn-outline-copper w-100">Найти бронь по коду</a>
       </div>
-
-      <div class="panel-card">
-        <div class="d-flex align-items-center gap-2 mb-2">
-          <i class="ph ph-lock-key text-muted" style="font-size: 20px;"></i>
-          <span class="fw-bold">Служебный вход</span>
-        </div>
-        <p class="small text-muted mb-3">Для администраторов, менеджеров и персонала отеля выделен отдельный портал.</p>
-        <a href="{% url 'accounts:staff_login' %}" class="btn btn-sm btn-outline-copper w-100">
-          <i class="ph ph-identification-badge me-1"></i>Вход для персонала
-        </a>
-      </div>
     </div>
   </div>
 </div>
