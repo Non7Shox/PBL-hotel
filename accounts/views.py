@@ -28,6 +28,12 @@ class SmartLoginView(LoginView):
     """Гостевой вход, не принимающий учётные записи персонала."""
     template_name = 'accounts/login.html'
 
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        for field in form.fields.values():
+            field.widget.attrs['class'] = 'form-control w-100'
+        return form
+
     def form_valid(self, form):
         user = form.get_user()
         if is_staff_member(user):
