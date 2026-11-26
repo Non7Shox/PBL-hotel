@@ -1,17 +1,15 @@
-{% extends 'base.html' %}
+{% extends 'panel/base.html' %}
 
 {% block title %}Номера и уборка — Aurelio Hotel{% endblock %}
 
-{% block content %}
-<section class="page-band">
-  <div class="container">
+{% block panel %}
+<header class="mb-4">
     <span class="hero-eyebrow">Служба размещения · {{ today|date:"d.m.Y" }}</span>
     <h1 class="mt-3">Номера и уборка</h1>
     <p>Кто живёт сейчас, что требует уборки, что снято с продажи.</p>
-  </div>
-</section>
+  </header>
 
-<div class="container pb-5">
+<div class="pb-2">
   <div class="table-responsive panel-card">
     <table class="data-table">
       <thead><tr><th>Номер</th><th>Этаж</th><th>Статус</th><th>Уборка</th><th></th></tr></thead>

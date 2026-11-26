@@ -11,7 +11,7 @@ from bookings import notify
 from bookings.models import Booking
 from rooms.models import Floor, Room
 
-from .decorators import role_required, staff_required
+from .decorators import is_hotel_admin, role_required, staff_required
 from .forms import DeskBookingForm
 from .models import StaffProfile
 from .reports import analytics, occupancy_grid
@@ -38,6 +38,11 @@ STATUS_CSS = {
     Booking.STATUS_CANCELLED: 'status-cancelled',
     Booking.STATUS_NO_SHOW: 'status-noshow',
 }
+
+
+def _panel_nav(request, section):
+    """Боковое меню админ-панели: видно только тем, кому доступна админ-панель."""
+    return {'section': section, 'hide_side': not is_hotel_admin(request.user)}
 
 
 @staff_required
@@ -82,6 +87,7 @@ def dashboard(request):
         'action_labels': ACTION_LABELS,
         'status_css': STATUS_CSS,
     }
+    context.update(_panel_nav(request, 'desk'))
     return render(request, 'staff/dashboard.html', context)
 
 
@@ -116,6 +122,7 @@ def rooms_board(request):
         ),
         'today': today,
     }
+    context.update(_panel_nav(request, 'desk'))
     return render(request, 'staff/rooms_board.html', context)
 
 
@@ -133,6 +140,7 @@ def desk_booking(request):
         'form': form,
         'recent': Booking.objects.select_related('room').order_by('-created_at')[:8],
     }
+    context.update(_panel_nav(request, 'desk'))
     return render(request, 'staff/desk_booking.html', context)
 
 
@@ -189,6 +197,7 @@ def grid(request):
         'rows': occupancy_grid(start, GRID_DAYS),
         'prev_start': (start - timedelta(days=7)).isoformat(),
         'next_start': (start + timedelta(days=7)).isoformat(),
+        **_panel_nav(request, 'grid'),
     })
 
 
@@ -199,6 +208,7 @@ def analytics_view(request):
     start = today - timedelta(days=14)
     context = analytics(start, 30)
     context.update(today=today, start=start, end=start + timedelta(days=29))
+    context.update(_panel_nav(request, 'analytics'))
     return render(request, 'staff/analytics.html', context)
 
 
