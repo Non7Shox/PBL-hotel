@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import date, timedelta
 
 from django.contrib import messages
 from django.core.exceptions import ValidationError
@@ -11,8 +11,10 @@ from bookings import notify
 from bookings.models import Booking
 from rooms.models import Floor, Room
 
-from .decorators import staff_required
+from .decorators import role_required, staff_required
 from .forms import DeskBookingForm
+from .models import StaffProfile
+from .reports import analytics, occupancy_grid
 
 STATUS_COLUMNS = [
     (Booking.STATUS_PENDING, "Новые заявки"),
@@ -166,3 +168,49 @@ def housekeeping_action(request, pk):
         messages.success(request, f"Номер {room.display_number}: {room.get_housekeeping_display()}")
     return redirect('staff:rooms_board')
 
+
+GRID_DAYS = 14
+
+
+@role_required(*StaffProfile.BOOKING_ROLES)
+def grid(request):
+    """Шахматка: номера по строкам, даты по столбцам."""
+    today = timezone.localdate()
+    try:
+        start = date.fromisoformat(request.GET.get('start', ''))
+        if not 2000 <= start.year <= 2100:
+            start = today
+    except ValueError:
+        start = today
+    return render(request, 'staff/grid.html', {
+        'today': today,
+        'start': start,
+        'days': [start + timedelta(days=i) for i in range(GRID_DAYS)],
+        'rows': occupancy_grid(start, GRID_DAYS),
+        'prev_start': (start - timedelta(days=7)).isoformat(),
+        'next_start': (start + timedelta(days=7)).isoformat(),
+    })
+
+
+@role_required(StaffProfile.ROLE_MANAGER)
+def analytics_view(request):
+    """Аналитика менеджера: 14 прошедших ночей и 16 начиная с сегодняшней."""
+    today = timezone.localdate()
+    start = today - timedelta(days=14)
+    context = analytics(start, 30)
+    context.update(today=today, start=start, end=start + timedelta(days=29))
+    return render(request, 'staff/analytics.html', context)
+
+
+@role_required(*StaffProfile.BOOKING_ROLES)
+def guest_pass(request, code):
+    """Страница, которая открывается после сканирования QR-пропуска гостя."""
+    booking = get_object_or_404(Booking.objects.select_related('room', 'room__floor'), code=code.upper())
+    today = timezone.localdate()
+    in_window = booking.check_in <= today < booking.check_out
+    return render(request, 'staff/guest_pass.html', {
+        'booking': booking,
+        'in_window': in_window,
+        'can_check_in': in_window and booking.status == Booking.STATUS_CONFIRMED,
+        'can_confirm': booking.status == Booking.STATUS_PENDING,
+    })

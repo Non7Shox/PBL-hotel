@@ -1,0 +1,16 @@
+{% extends 'panel/base.html' %}
+{% block panel %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="mb-0">Пользователи и роли</h1>
+  <a class="btn btn-copper btn-sm" href="{% url 'panel:user_add' %}">+ Добавить</a>
+</div>
+<div class="panel-card"><div class="table-responsive"><table class="data-table">
+  <thead><tr><th>Логин</th><th>Имя</th><th>E-mail</th><th>Роль</th><th>Активен</th><th></th></tr></thead>
+  <tbody>{% for u in users %}<tr>
+    <td>{{ u.username }}</td><td>{{ u.get_full_name|default:"—" }}</td><td>{{ u.email|default:"—" }}</td>
+    <td>{% if u.is_superuser %}Суперпользователь{% elif u.staff_profile %}{{ u.staff_profile.get_role_display }}{% else %}Гость{% endif %}</td>
+    <td>{% if u.is_active %}Да{% else %}Нет{% endif %}</td>
+    <td class="text-end">{% if not u.is_superuser %}<a class="btn btn-outline-copper btn-sm" href="{% url 'panel:user_edit' u.pk %}">Изменить</a>{% endif %}</td>
+  </tr>{% endfor %}</tbody>
+</table></div></div>
+{% endblock %}

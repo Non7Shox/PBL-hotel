@@ -1,0 +1,17 @@
+{% extends 'panel/base.html' %}
+{% block panel %}
+<h1>Удаление</h1>
+<div class="panel-card">
+  <p><strong>{{ object }}</strong></p>
+  {% if blocker %}
+    <p class="alert alert-aurelio alert-warning">{{ blocker }}</p>
+    <a class="btn btn-outline-copper" href="{% url 'panel:list' section %}">Назад</a>
+  {% else %}
+    <p>Это действие нельзя отменить.{% if reviews_lost or rates_lost %} Вместе с номером удалятся отзывы ({{ reviews_lost }}) и сезонные цены ({{ rates_lost }}).{% endif %}</p>
+    <form method="post" class="d-flex gap-2">{% csrf_token %}
+      <button class="btn btn-copper">Удалить</button>
+      <a class="btn btn-outline-copper" href="{% url 'panel:list' section %}">Отмена</a>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

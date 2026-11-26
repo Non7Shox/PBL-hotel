@@ -1,0 +1,18 @@
+{% extends 'panel/base.html' %}
+{% block panel %}
+<h1>Отзывы</h1>
+{% for r in page %}
+  <div class="panel-card mb-3">
+    <div class="d-flex flex-wrap justify-content-between gap-3">
+      <div><strong>{{ r.user.username }}</strong> · {{ r.room.title }} · {{ r.rating }}/5
+        <p class="text-muted mb-0 mt-1">{{ r.comment }}</p></div>
+      <form method="post" action="{% url 'panel:review_toggle' r.pk %}">{% csrf_token %}
+        <span class="status-chip {% if r.is_published %}status-confirmed{% else %}status-out{% endif %} me-2">{% if r.is_published %}Виден гостям{% else %}Скрыт{% endif %}</span>
+        <button class="btn btn-outline-copper btn-sm">{% if r.is_published %}Скрыть{% else %}Опубликовать{% endif %}</button>
+      </form>
+    </div>
+  </div>
+{% empty %}<div class="panel-card">Отзывов пока нет.</div>{% endfor %}
+{% if page.has_previous %}<a class="me-3" href="?page={{ page.previous_page_number }}">← Назад</a>{% endif %}
+{% if page.has_next %}<a href="?page={{ page.next_page_number }}">Вперёд →</a>{% endif %}
+{% endblock %}

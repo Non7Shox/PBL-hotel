@@ -22,6 +22,8 @@
 
   <div class="d-flex flex-wrap gap-3 mb-4">
     <a href="{% url 'staff:desk_booking' %}" class="btn btn-copper px-4">Бронь на стойке</a>
+    {% if not staff_profile or staff_profile.can_manage_bookings %}<a href="{% url 'staff:grid' %}" class="btn btn-outline-copper px-4">Шахматка</a>{% endif %}
+    {% if not staff_profile or staff_profile.is_manager %}<a href="{% url 'staff:analytics' %}" class="btn btn-outline-copper px-4">Аналитика</a>{% endif %}
     <a href="{% url 'staff:rooms_board' %}" class="btn btn-outline-copper px-4">Номера и уборка</a>
   </div>
 

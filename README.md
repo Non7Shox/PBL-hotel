@@ -27,8 +27,8 @@ A full-featured hotel management web application built with **Django 6** as a Pr
 | **Seasonal pricing** | Set per-room price overrides for date ranges; the system calculates the correct total automatically |
 | **Staff roles** | Three roles with different permissions: **Manager**, **Receptionist**, **Housekeeping** |
 
-### Admin (`/admin/`)
-Full Django admin interface with inline seasonal rates, amenity management, and staff profile controls.
+### Admin dashboard (`/admin/`)
+Custom dashboard for superusers and managers: bookings, rooms, floors, amenities, seasonal rates and review moderation. Superusers also manage users and roles. The stock Django admin is kept at `/django-admin/` as a fallback.
 
 ---
 
@@ -214,7 +214,8 @@ python -c "from django.core.management.utils import get_random_secret_key; print
 | `/accounts/otp/send/` | Request a one-time email or SMS code |
 | `/accounts/google/` | Start Google OAuth 2.0 login |
 | `/staff/` | Staff dashboard |
-| `/admin/` | Django admin panel |
+| `/admin/` | Hotel admin dashboard |
+| `/django-admin/` | Django admin (fallback) |
 
 ---
 

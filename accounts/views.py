@@ -17,7 +17,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from bookings.models import Booking
-from staff.decorators import is_staff_member
+from staff.decorators import is_staff_member, is_hotel_admin
 
 from .forms import SignUpForm, StaffLoginForm
 from .models import UserProfile
@@ -61,6 +61,8 @@ class StaffLoginView(LoginView):
         explicit_next = self.get_redirect_url()
         if explicit_next:
             return explicit_next
+        if is_hotel_admin(self.request.user):
+            return reverse('panel:home')
         return reverse('staff:dashboard')
 
 

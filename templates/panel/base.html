@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Админ-панель — Aurelio Hotel{% endblock %}
+{% block meta_robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block extra_style %}
+  .panel-layout{ display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 24px; align-items: start; padding: 32px 0; }
+  .panel-side{ position: sticky; top: 96px; max-height: calc(100vh - 112px); overflow-y: auto; scrollbar-width: thin;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-2xl); padding: 12px;
+    display: flex; flex-direction: column; gap: 2px; box-shadow: 0 8px 24px rgba(17,17,16,0.05); }
+  .side-label{ padding: 12px 12px 4px; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--muted); }
+  .side-label:first-child{ padding-top: 4px; }
+  .panel-side a{ position: relative; display: flex; gap: 12px; align-items: center; flex-shrink: 0; white-space: nowrap;
+    padding: 8px 12px; border-radius: var(--r-lg); color: var(--ink-soft); font-size: 14px; line-height: 20px; font-weight: 500;
+    transition: background-color var(--dur-color) var(--ease), color var(--dur-color) var(--ease); }
+  .panel-side a i{ font-size: 18px; color: var(--muted); }
+  .panel-side a:hover{ background: var(--bg); color: var(--ink); }
+  .panel-side a.active{ background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .panel-side a.active i{ color: var(--accent); }
+  .panel-side a.active::before{ content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: var(--accent); }
+  .side-user{ display: flex; gap: 12px; align-items: center; margin-top: 12px; padding: 12px 4px 0; border-top: 1px solid var(--line); min-width: 0; }
+  .side-avatar{ width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 600; text-transform: uppercase; }
+  .side-user strong{ display: block; font-size: 14px; line-height: 20px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .side-user small{ display: block; color: var(--muted); font-size: 12px; line-height: 16px; }
+  .bars{ display: flex; align-items: flex-end; gap: 4px; height: 128px; }
+  .bar{ flex: 1; height: 100%; display: flex; align-items: flex-end; }
+  .bar i{ display: block; width: 100%; height: calc(var(--h) * 1%); background: var(--accent); border-radius: 4px 4px 0 0; }
+  .check-list > div{ display: flex; flex-wrap: wrap; gap: 8px 16px; }
+  .check-list label{ display: flex; gap: 8px; align-items: center; font-size: 14px; }
+  @media (max-width: 991px){
+    .panel-layout{ grid-template-columns: minmax(0, 1fr); }
+    .panel-side{ position: static; max-height: none; flex-direction: row; overflow-x: auto; padding: 8px; }
+    .panel-side a.active::before, .side-label, .side-user{ display: none; }
+  }
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="panel-layout">
+    <nav class="panel-side" aria-label="Разделы админ-панели">
+      <div class="side-label">Управление</div>
+      <a href="{% url 'panel:home' %}" class="{% if section == 'home' %}active{% endif %}"><i class="ph ph-squares-four"></i>Обзор</a>
+      <a href="{% url 'panel:bookings' %}" class="{% if section == 'bookings' %}active{% endif %}"><i class="ph ph-calendar-check"></i>Брони</a>
+      <div class="side-label">Отель</div>
+      <a href="{% url 'panel:list' 'rooms' %}" class="{% if section == 'rooms' %}active{% endif %}"><i class="ph ph-bed"></i>Номера</a>
+      <a href="{% url 'panel:list' 'floors' %}" class="{% if section == 'floors' %}active{% endif %}"><i class="ph ph-stack"></i>Этажи</a>
+      <a href="{% url 'panel:list' 'amenities' %}" class="{% if section == 'amenities' %}active{% endif %}"><i class="ph ph-sparkle"></i>Удобства</a>
+      <a href="{% url 'panel:list' 'rates' %}" class="{% if section == 'rates' %}active{% endif %}"><i class="ph ph-tag"></i>Сезонные цены</a>
+      <div class="side-label">Гости и доступ</div>
+      <a href="{% url 'panel:reviews' %}" class="{% if section == 'reviews' %}active{% endif %}"><i class="ph ph-star"></i>Отзывы</a>
+      {% if user.is_superuser %}<a href="{% url 'panel:users' %}" class="{% if section == 'users' %}active{% endif %}"><i class="ph ph-users"></i>Пользователи</a>{% endif %}
+      <div class="side-label">Инструменты</div>
+      <a href="{% url 'staff:grid' %}"><i class="ph ph-grid-four"></i>Шахматка</a>
+      <a href="{% url 'staff:analytics' %}"><i class="ph ph-chart-bar"></i>Аналитика</a>
+      <a href="{% url 'staff:dashboard' %}"><i class="ph ph-bell-ringing"></i>Ресепшн</a>
+      <div class="side-user">
+        <span class="side-avatar" aria-hidden="true">{{ user.username|slice:":1" }}</span>
+        <div class="min-w-0" style="min-width: 0;">
+          <strong>{{ user.get_full_name|default:user.username }}</strong>
+          <small>{% if user.is_superuser %}Суперпользователь{% else %}Менеджер отеля{% endif %}</small>
+        </div>
+      </div>
+    </nav>
+    <div>{% block panel %}{% endblock %}</div>
+  </div>
+</div>
+{% endblock %}

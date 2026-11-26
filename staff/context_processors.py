@@ -4,7 +4,7 @@
 только персоналу (роли в модели StaffProfile).
 """
 
-from .decorators import get_staff_profile, is_staff_member
+from .decorators import get_staff_profile, is_hotel_admin, is_staff_member
 
 
 def staff_status(request):
@@ -14,6 +14,7 @@ def staff_status(request):
     return {
         'is_staff_member': staff_member,
         'staff_profile': profile,
+        'is_hotel_admin': bool(staff_member and is_hotel_admin(user)),
         'can_manage_bookings': bool(profile and profile.can_manage_bookings) or bool(
             user and user.is_superuser
         ),

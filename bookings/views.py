@@ -183,6 +183,22 @@ def booking_payment_qr(request, code):
     return HttpResponse(output.getvalue(), content_type='image/svg+xml')
 
 
+def booking_pass_qr(request, code):
+    """QR-пропуск гостя: ведёт на страницу заселения, доступную только персоналу."""
+    booking = _get_booking_or_none(request, code)
+    if booking is None or not booking.is_active:
+        raise Http404
+
+    pass_path = reverse('staff:guest_pass', kwargs={'code': booking.code})
+    image = qrcode.make(
+        f'{settings.SITE_URL.rstrip("/")}{pass_path}',
+        image_factory=SvgPathImage, box_size=8, border=4,
+    )
+    output = BytesIO()
+    image.save(output)
+    return HttpResponse(output.getvalue(), content_type='image/svg+xml')
+
+
 @require_POST
 def payment_process(request, code):
     with transaction.atomic():

@@ -586,6 +586,7 @@
     <ul class="nav-links d-none d-lg-flex">
       <li><a href="{% url 'rooms:room_search' %}" {% if current == 'room_search' %}aria-current="page"{% endif %}>Номера</a></li>
       <li><a href="{% url 'rooms:hotel_floors' %}" {% if current == 'hotel_floors' %}aria-current="page"{% endif %}>Схема этажей</a></li>
+      <li><a href="{% url 'rooms:matchmaker' %}" {% if current == 'matchmaker' %}aria-current="page"{% endif %}>Подбор</a></li>
       <li><a href="{% url 'rooms:room_list' %}#faq">Вопросы</a></li>
       <li><span class="nav-sep d-block" aria-hidden="true"></span></li>
       {% if user.is_authenticated %}
@@ -624,6 +625,7 @@
     <li><a href="{% url 'rooms:room_list' %}" {% if current == 'room_list' %}aria-current="page"{% endif %}>Главная</a></li>
     <li><a href="{% url 'rooms:room_search' %}" {% if current == 'room_search' %}aria-current="page"{% endif %}>Номера</a></li>
     <li><a href="{% url 'rooms:hotel_floors' %}" {% if current == 'hotel_floors' %}aria-current="page"{% endif %}>Схема этажей</a></li>
+    <li><a href="{% url 'rooms:matchmaker' %}" {% if current == 'matchmaker' %}aria-current="page"{% endif %}>Подбор номера</a></li>
     <li><a href="{% url 'rooms:room_list' %}#faq">Вопросы и ответы</a></li>
     {% if user.is_authenticated %}
       <li><a href="{% url 'bookings:my_bookings' %}" {% if current == 'my_bookings' %}aria-current="page"{% endif %}>Мои брони</a></li>

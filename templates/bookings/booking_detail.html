@@ -68,6 +68,14 @@
         {% endif %}
       </div>
 
+      {% if booking.is_active %}
+        <div class="panel-card mb-4 text-center">
+          <div class="panel-title">QR-пропуск для заселения</div>
+          <img src="{% url 'bookings:booking_pass_qr' booking.code %}" alt="QR-пропуск брони {{ booking.code }}" width="192" height="192">
+          <p class="small text-muted mb-0 mt-2">Покажите код на ресепшн — администратор отсканирует его и заселит вас.</p>
+        </div>
+      {% endif %}
+
       {% include 'bookings/_telegram_card.html' %}
 
       <div class="panel-card mb-4">

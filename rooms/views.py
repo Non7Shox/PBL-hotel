@@ -10,7 +10,8 @@ from django.views.decorators.http import require_POST
 from bookings.forms import BookingForm
 from bookings.models import Booking
 
-from .forms import ReviewForm, RoomSearchForm
+from .forms import MatchmakerForm, ReviewForm, RoomSearchForm
+from .matchmaker import score_room
 from .models import Floor, Review, Room
 
 
@@ -154,3 +155,37 @@ def add_review(request, pk):
     else:
         messages.error(request, "Не удалось сохранить отзыв: заполните оценку и текст.")
     return redirect('rooms:room_detail', pk=room.pk)
+
+
+# 5. Умный подбор номера: три лучших варианта с объяснением
+def matchmaker(request):
+    searched = 'check_in' in request.GET
+    form = MatchmakerForm(request.GET if searched else None)
+    valid = searched and form.is_valid()
+    matches = []
+
+    if valid:
+        data = form.cleaned_data
+        check_in, check_out = data['check_in'], data['check_out']
+        rooms = list(
+            Room.objects.filter(is_active=True, capacity__gte=data['guests'])
+            .exclude(housekeeping='out_of_service')
+            .exclude(pk__in=_busy_room_ids(check_in, check_out))
+            .prefetch_related('amenities')
+        )
+        max_room_price = max((float(r.price_per_night) for r in rooms), default=0)
+        for room in rooms:
+            room.match, room.reasons, room.missing = score_room(
+                room,
+                guests=data['guests'],
+                budget=data['max_price'],
+                wishes=list(data['wishes']),
+                priority=data['priority'],
+                max_room_price=max_room_price,
+            )
+            room.stay_total = room.get_price_for_dates(check_in, check_out)
+        matches = sorted(rooms, key=lambda r: (-r.match, r.price_per_night, r.pk))[:3]
+
+    return render(request, 'rooms/matchmaker.html', {
+        'form': form, 'matches': matches, 'searched': valid,
+    })

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Шахматка — Aurelio Hotel{% endblock %}
+{% block extra_css %}
+<style>
+  .grid-scroll{ overflow-x: auto; }
+  .chess{ border-collapse: separate; border-spacing: 2px; width: 100%; min-width: 960px; table-layout: fixed; }
+  .chess th, .chess td{ font-size: 12px; line-height: 16px; text-align: center; height: 40px; border-radius: var(--r-md); }
+  .chess th{ color: var(--muted); font-weight: 500; }
+  .chess .room-col{ width: 144px; text-align: left; color: var(--ink); }
+  .chess th.is-today{ background: var(--ink); color: #fff; }
+  .chess td.free{ background: var(--bg); }
+  .chess td.busy a{ display: block; padding: 0 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; line-height: 40px; border-radius: var(--r-md); font-weight: 500; }
+</style>
+{% endblock %}
+{% block content %}
+<section class="page-band">
+  <div class="container">
+    <h1>Шахматка номеров</h1>
+    <p>Занятость на 14 дней с {{ start|date:"d.m.Y" }}. Нажмите на бронь, чтобы открыть её.</p>
+  </div>
+</section>
+<div class="container pb-5">
+  <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+    <a class="btn btn-outline-copper btn-sm" href="?start={{ prev_start }}">← Неделя назад</a>
+    <a class="btn btn-outline-copper btn-sm" href="{% url 'staff:grid' %}">Сегодня</a>
+    <a class="btn btn-outline-copper btn-sm" href="?start={{ next_start }}">Неделя вперёд →</a>
+    <span class="status-chip status-pending ms-lg-3">Заявка</span>
+    <span class="status-chip status-confirmed">Подтверждено</span>
+    <span class="status-chip status-in">Заселён</span>
+    <span class="status-chip status-out">Выехал</span>
+  </div>
+  <div class="panel-card grid-scroll">
+    <table class="chess">
+      <thead><tr><th class="room-col">Номер</th>
+        {% for d in days %}<th {% if d == today %}class="is-today"{% endif %}>{{ d|date:"D" }}<br>{{ d|date:"d.m" }}</th>{% endfor %}
+      </tr></thead>
+      <tbody>
+        {% for row in rows %}
+          <tr><th class="room-col">{{ row.room.display_number }}<br><span class="text-muted">{{ row.room.title }}</span></th>
+            {% for cell in row.cells %}
+              {% if cell.booking %}
+                <td class="busy" colspan="{{ cell.span }}"><a class="{{ cell.booking.status_css }}" href="{% url 'bookings:booking_detail' cell.booking.code %}" title="{{ cell.booking.guest_name }} · {{ cell.booking.booked_dates_label }} · {{ cell.booking.get_status_display }}">{{ cell.booking.guest_name }}</a></td>
+              {% else %}<td class="free"></td>{% endif %}
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
