@@ -50,7 +50,17 @@ class AccountsAuthTests(TestCase):
         response = self.client.get(reverse('accounts:login'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Вход для гостей")
-        self.assertContains(response, reverse('accounts:staff_login'))
+        self.assertNotContains(response, reverse('accounts:staff_login'))
+        self.assertNotContains(response, "Служебный вход")
+        self.assertNotContains(response, "Панель персонала")
+
+    def test_staff_profile_page_has_no_staff_portal_links(self):
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse('accounts:profile'))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, reverse('staff:dashboard'))
+        self.assertNotContains(response, reverse('staff:desk_booking'))
+        self.assertNotContains(response, "Панель персонала")
 
     def test_staff_login_page_renders(self):
         response = self.client.get(reverse('accounts:staff_login'))
@@ -65,21 +75,25 @@ class AccountsAuthTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse('bookings:my_bookings'))
 
-    def test_staff_login_smart_redirect(self):
+    def test_staff_cannot_sign_in_through_guest_login(self):
         response = self.client.post(reverse('accounts:login'), {
             'username': 'staff1',
             'password': 'staffpassword123'
-        }, follow=False)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('staff:dashboard'))
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.request['PATH_INFO'], reverse('accounts:login'))
+        self.assertContains(response, "Не удалось выполнить вход.")
+        self.assertNotIn('_auth_user_id', self.client.session)
 
-    def test_admin_login_smart_redirect(self):
+    def test_superuser_cannot_sign_in_through_guest_login(self):
         response = self.client.post(reverse('accounts:login'), {
             'username': 'admin1',
             'password': 'adminpassword123'
-        }, follow=False)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('panel:home'))
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.request['PATH_INFO'], reverse('accounts:login'))
+        self.assertContains(response, "Не удалось выполнить вход.")
+        self.assertNotIn('_auth_user_id', self.client.session)
 
     def test_staff_portal_blocks_regular_guest(self):
         response = self.client.post(reverse('accounts:staff_login'), {

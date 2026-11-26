@@ -597,12 +597,6 @@
           </button>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">Личный кабинет</a></li>
-            {% if is_staff_member %}
-              <li><hr class="dropdown-divider"></li>
-              {% if is_hotel_admin %}<li><a class="dropdown-item" href="{% url 'panel:home' %}">Админ-панель</a></li>{% endif %}
-              <li><a class="dropdown-item" href="{% url 'staff:dashboard' %}">Панель персонала</a></li>
-              <li><a class="dropdown-item" href="{% url 'staff:desk_booking' %}">Бронь на стойке</a></li>
-            {% endif %}
             <li><hr class="dropdown-divider"></li>
             <li>
               <form method="post" action="{% url 'accounts:logout' %}">
@@ -636,10 +630,6 @@
     {% if user.is_authenticated %}
       <li><a href="{% url 'bookings:my_bookings' %}" {% if current == 'my_bookings' %}aria-current="page"{% endif %}>Мои брони</a></li>
       <li><a href="{% url 'accounts:profile' %}" {% if current == 'profile' %}aria-current="page"{% endif %}>Личный кабинет</a></li>
-      {% if is_hotel_admin %}<li><a href="{% url 'panel:home' %}">Админ-панель</a></li>{% endif %}
-      {% if is_staff_member %}
-        <li><a href="{% url 'staff:dashboard' %}">Панель персонала</a></li>
-      {% endif %}
       <li>
         <form method="post" action="{% url 'accounts:logout' %}">
           {% csrf_token %}
@@ -685,7 +675,6 @@
             <li><a href="{% url 'rooms:room_search' %}">Найти номер</a></li>
             <li><a href="{% url 'rooms:hotel_floors' %}">Схема этажей</a></li>
             <li><a href="{% url 'bookings:booking_lookup' %}">Найти бронь</a></li>
-            <li><a href="{% if is_staff_member %}{% url 'staff:dashboard' %}{% else %}{% url 'accounts:staff_login' %}{% endif %}">Вход для персонала</a></li>
           </ul>
         </div>
         <div class="col-6 col-lg-4">

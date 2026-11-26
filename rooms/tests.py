@@ -73,6 +73,12 @@ class RoomViewsTestCase(TestCase):
     def test_room_search_page(self):
         response = self.client.get(reverse('rooms:room_search'))
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-date-preset="tomorrow"')
+        self.assertContains(response, 'data-date-preset="2"')
+        self.assertContains(response, 'data-date-preset="3"')
+        self.assertContains(response, 'data-date-preset="weekend"')
+        self.assertContains(response, 'name="check_in"')
+        self.assertContains(response, 'name="check_out"')
 
 
 class SeasonalPricingTests(TestCase):

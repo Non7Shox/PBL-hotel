@@ -13,7 +13,7 @@
 
 <div class="container pb-5">
   <div class="panel-card mb-4">
-    <form method="get" class="row g-3 align-items-end">
+    <form method="get" class="row g-3 align-items-end" data-room-search-form data-searched="{{ searched|yesno:'true,false' }}">
       <div class="col-md-3">
         <label class="form-label" for="{{ form.check_in.id_for_label }}">{{ form.check_in.label }}</label>
         {{ form.check_in }}
@@ -36,6 +36,15 @@
       <div class="col-md-2">
         <label class="form-label" for="{{ form.max_price.id_for_label }}">{{ form.max_price.label }}</label>
         {{ form.max_price }}
+      </div>
+      <div class="col-12">
+        <span class="form-label d-block">Быстрый выбор дат</span>
+        <div class="d-flex flex-wrap gap-2" role="group" aria-label="Быстрый выбор дат">
+          <button type="button" class="btn btn-sm btn-outline-copper" data-date-preset="tomorrow">Сегодня → Завтра</button>
+          <button type="button" class="btn btn-sm btn-outline-copper" data-date-preset="2">На 2 ночи</button>
+          <button type="button" class="btn btn-sm btn-outline-copper" data-date-preset="3">На 3 ночи</button>
+          <button type="button" class="btn btn-sm btn-outline-copper" data-date-preset="weekend">Ближайшие выходные</button>
+        </div>
       </div>
       <div class="col-12 d-flex flex-wrap gap-3">
         <button type="submit" class="btn btn-copper px-4">Показать свободные номера</button>
@@ -98,4 +107,82 @@
     </div>
   {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    var form = document.querySelector('[data-room-search-form]');
+    if (!form) return;
+
+    var checkIn = form.querySelector('[name="check_in"]');
+    var checkOut = form.querySelector('[name="check_out"]');
+    if (!checkIn || !checkOut) return;
+
+    function parseDate(value) {
+      var parts = value.split('-').map(Number);
+      if (parts.length !== 3 || parts.some(Number.isNaN)) return null;
+      return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+
+    function formatDate(date) {
+      return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, '0'),
+        String(date.getDate()).padStart(2, '0')
+      ].join('-');
+    }
+
+    function addDays(date, days) {
+      var result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      result.setDate(result.getDate() + days);
+      return result;
+    }
+
+    var today = checkIn.min;
+
+    function updateCheckoutMin() {
+      var arrival = parseDate(checkIn.value);
+      checkOut.min = arrival ? formatDate(addDays(arrival, 1)) : today;
+    }
+
+    function adjustCheckout() {
+      updateCheckoutMin();
+      var arrival = parseDate(checkIn.value);
+      if (!arrival) return;
+      if (!checkOut.value || checkOut.value <= checkIn.value) {
+        checkOut.value = formatDate(addDays(arrival, 1));
+      }
+    }
+
+    checkIn.addEventListener('change', adjustCheckout);
+    updateCheckoutMin();
+    if (checkIn.value && checkOut.value && checkOut.value <= checkIn.value) {
+      adjustCheckout();
+    }
+
+    form.querySelectorAll('[data-date-preset]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        var start = parseDate(today);
+        var preset = button.dataset.datePreset;
+        var nights;
+
+        if (preset === 'weekend') {
+          nights = 2;
+          start = addDays(start, (5 - start.getDay() + 7) % 7);
+        } else {
+          nights = preset === 'tomorrow' ? 1 : Number(preset);
+        }
+
+        checkIn.value = formatDate(start);
+        checkOut.value = formatDate(addDays(start, nights));
+        updateCheckoutMin();
+        checkIn.dispatchEvent(new Event('change', { bubbles: true }));
+        checkOut.dispatchEvent(new Event('change', { bubbles: true }));
+
+        if (form.dataset.searched === 'true') form.requestSubmit();
+      });
+    });
+  })();
+</script>
 {% endblock %}

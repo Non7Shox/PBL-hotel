@@ -7,7 +7,7 @@ import urllib.parse
 import urllib.request
 
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.conf import settings
@@ -25,17 +25,30 @@ from .otp import OTPError, send_otp, verify_otp
 
 
 class SmartLoginView(LoginView):
-    """Умный вход для пользователей с автоматической маршрутизацией по ролям."""
+    """Гостевой вход, не принимающий учётные записи персонала."""
     template_name = 'accounts/login.html'
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        for field in form.fields.values():
+            field.widget.attrs['class'] = 'form-control w-100'
+        return form
+
+    def form_valid(self, form):
+        user = form.get_user()
+        if is_staff_member(user):
+            logout(self.request)
+            messages.warning(
+                self.request,
+                "Не удалось выполнить вход. Проверьте данные и попробуйте снова.",
+            )
+            return redirect('accounts:login')
+        return super().form_valid(form)
 
     def get_success_url(self):
         explicit_next = self.get_redirect_url()
         if explicit_next:
             return explicit_next
-        if is_hotel_admin(self.request.user):
-            return reverse('panel:home')
-        if is_staff_member(self.request.user):
-            return reverse('staff:dashboard')
         return reverse('bookings:my_bookings')
 
 
