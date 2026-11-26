@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'panel/base.html' %}
 {% block title %}Шахматка — Aurelio Hotel{% endblock %}
 {% block extra_css %}
 <style>
@@ -12,14 +12,12 @@
   .chess td.busy a{ display: block; padding: 0 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; line-height: 40px; border-radius: var(--r-md); font-weight: 500; }
 </style>
 {% endblock %}
-{% block content %}
-<section class="page-band">
-  <div class="container">
+{% block panel %}
+<header class="mb-4">
     <h1>Шахматка номеров</h1>
     <p>Занятость на 14 дней с {{ start|date:"d.m.Y" }}. Нажмите на бронь, чтобы открыть её.</p>
-  </div>
-</section>
-<div class="container pb-5">
+  </header>
+<div class="pb-2">
   <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
     <a class="btn btn-outline-copper btn-sm" href="?start={{ prev_start }}">← Неделя назад</a>
     <a class="btn btn-outline-copper btn-sm" href="{% url 'staff:grid' %}">Сегодня</a>

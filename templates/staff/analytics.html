@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'panel/base.html' %}
 {% block title %}Аналитика — Aurelio Hotel{% endblock %}
 {% block extra_css %}
 <style>
@@ -13,14 +13,12 @@
   .rank-track i{ display: block; height: 100%; border-radius: 4px; background: var(--accent); }
 </style>
 {% endblock %}
-{% block content %}
-<section class="page-band">
-  <div class="container">
+{% block panel %}
+<header class="mb-4">
     <h1>Аналитика отеля</h1>
     <p>{{ start|date:"d.m" }} — {{ end|date:"d.m.Y" }}: 14 прошедших ночей и 16 начиная с сегодняшней, по текущим броням.</p>
-  </div>
-</section>
-<div class="container pb-5">
+  </header>
+<div class="pb-2">
   <div class="row g-3 mb-4">
     <div class="col-6 col-lg-3"><div class="kpi-card"><div class="kpi-value">{{ occupancy }}%</div><div class="kpi-label">Загрузка</div></div></div>
     <div class="col-6 col-lg-3"><div class="kpi-card"><div class="kpi-value">${{ revenue|floatformat:0 }}</div><div class="kpi-label">Выручка по броням</div></div></div>
