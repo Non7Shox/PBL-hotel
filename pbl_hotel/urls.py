@@ -6,7 +6,9 @@ from django.conf.urls.static import static
 from bookings.views import apple_pay_domain_association
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin/', include('staff.panel_urls')),
+    # стандартная админка Django — только как резерв
+    path('django-admin/', admin.site.urls),
     path(
         '.well-known/apple-developer-merchantid-domain-association',
         apple_pay_domain_association,

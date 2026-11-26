@@ -17,6 +17,15 @@ def is_staff_member(user):
     return StaffProfile.objects.filter(user=user).exists()
 
 
+def is_hotel_admin(user):
+    """Админ-панель: суперпользователь или менеджер отеля."""
+    if not user.is_authenticated or not user.is_active:
+        return False
+    return user.is_superuser or StaffProfile.objects.filter(
+        user=user, role=StaffProfile.ROLE_MANAGER
+    ).exists()
+
+
 def get_staff_profile(user):
     """Профиль сотрудника или None (для админов профиль может отсутствовать)."""
     if not user.is_authenticated:

@@ -79,7 +79,7 @@ class AccountsAuthTests(TestCase):
             'password': 'adminpassword123'
         }, follow=False)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('staff:dashboard'))
+        self.assertEqual(response.url, reverse('panel:home'))
 
     def test_staff_portal_blocks_regular_guest(self):
         response = self.client.post(reverse('accounts:staff_login'), {

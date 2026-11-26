@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Пропуск {{ booking.code }} — Aurelio Hotel{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width: 560px;">
+  <div class="panel-card text-center">
+    <i class="ph ph-identification-badge fs-1"></i>
+    <h1 class="mt-2">{{ booking.guest_name }}</h1>
+    <p><span class="status-chip {{ booking.status_css }}">{{ booking.get_status_display }}</span></p>
+    <p class="mb-1">{{ booking.code }} · номер {{ booking.room.display_number }} · {{ booking.room.title }}</p>
+    <p class="text-muted">{{ booking.booked_dates_label }} · гостей: {{ booking.guests }} · {{ booking.get_payment_status_display }}</p>
+    {% if can_check_in %}
+      <form method="post" action="{% url 'staff:booking_action' booking.pk 'checked_in' %}">
+        {% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">
+        <button class="btn btn-copper btn-lg w-100">Заселить гостя</button>
+      </form>
+    {% elif can_confirm %}
+      <form method="post" action="{% url 'staff:booking_action' booking.pk 'confirmed' %}">
+        {% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">
+        <button class="btn btn-copper btn-lg w-100">Подтвердить бронь</button>
+      </form>
+    {% elif booking.status == 'checked_in' %}
+      <p class="alert alert-aurelio alert-success mb-0">Гость уже заселён.</p>
+    {% elif booking.status == 'confirmed' and not in_window %}
+      <p class="alert alert-aurelio alert-warning mb-0">Заселение недоступно: даты брони не сегодня.</p>
+    {% else %}
+      <p class="alert alert-aurelio alert-warning mb-0">Заселение по этой брони недоступно.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

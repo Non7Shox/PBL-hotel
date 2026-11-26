@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Аналитика — Aurelio Hotel{% endblock %}
+{% block extra_css %}
+<style>
+  .bars{ display: flex; align-items: flex-end; gap: 4px; height: 192px; }
+  .bar{ flex: 1; height: 100%; display: flex; align-items: flex-end; }
+  .bar i{ display: block; width: 100%; height: calc(var(--h) * 1%); background: var(--accent); border-radius: 4px 4px 0 0; transform-origin: bottom; animation: grow 700ms var(--ease) both; }
+  .bar.future i{ opacity: 0.45; }
+  .bar.today i{ background: var(--ink); }
+  @keyframes grow{ from{ transform: scaleY(0); } }
+  @media (prefers-reduced-motion: reduce){ .bar i{ animation: none; } }
+  .rank-track{ height: 8px; border-radius: 4px; background: var(--line); }
+  .rank-track i{ display: block; height: 100%; border-radius: 4px; background: var(--accent); }
+</style>
+{% endblock %}
+{% block content %}
+<section class="page-band">
+  <div class="container">
+    <h1>Аналитика отеля</h1>
+    <p>{{ start|date:"d.m" }} — {{ end|date:"d.m.Y" }}: 14 прошедших ночей и 16 начиная с сегодняшней, по текущим броням.</p>
+  </div>
+</section>
+<div class="container pb-5">
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="kpi-card"><div class="kpi-value">{{ occupancy }}%</div><div class="kpi-label">Загрузка</div></div></div>
+    <div class="col-6 col-lg-3"><div class="kpi-card"><div class="kpi-value">${{ revenue|floatformat:0 }}</div><div class="kpi-label">Выручка по броням</div></div></div>
+    <div class="col-6 col-lg-3"><div class="kpi-card"><div class="kpi-value">${{ adr|floatformat:0 }}</div><div class="kpi-label">ADR — средний тариф</div></div></div>
+    <div class="col-6 col-lg-3"><div class="kpi-card"><div class="kpi-value">${{ revpar|floatformat:0 }}</div><div class="kpi-label">RevPAR</div></div></div>
+  </div>
+  <div class="panel-card mb-4">
+    <div class="panel-title">Загрузка по ночам, %</div>
+    <div class="bars">{% for d in daily %}<div class="bar {% if d.date > today %}future{% elif d.date == today %}today{% endif %}" title="{{ d.date|date:'d.m' }}: {{ d.occupancy }}%"><i style="--h: {{ d.occupancy }}"></i></div>{% endfor %}</div>
+    <div class="d-flex justify-content-between gap-2 muted-label mt-2"><span>{{ start|date:"d.m" }}</span><span>чёрный — сегодня, бледные — будущие</span><span>{{ end|date:"d.m" }}</span></div>
+  </div>
+  <div class="panel-card mb-4">
+    <div class="panel-title">Выручка по ночам</div>
+    <div class="bars">{% for d in daily %}<div class="bar {% if d.date > today %}future{% elif d.date == today %}today{% endif %}" title="{{ d.date|date:'d.m' }}: ${{ d.revenue|floatformat:0 }}"><i style="--h: {{ d.revenue_height }}"></i></div>{% endfor %}</div>
+  </div>
+  <div class="panel-card">
+    <div class="panel-title">Топ-5 номеров по выручке</div>
+    {% for e in ranking %}
+      <div class="mb-3">
+        <div class="d-flex justify-content-between small mb-1"><span>{{ e.room.display_number }} · {{ e.room.title }} ({{ e.nights }} н.)</span><span>${{ e.revenue|floatformat:0 }}</span></div>
+        <div class="rank-track"><i style="width: {{ e.share }}%"></i></div>
+      </div>
+    {% empty %}<p class="text-muted mb-0">За этот период броней нет.</p>{% endfor %}
+  </div>
+</div>
+{% endblock %}

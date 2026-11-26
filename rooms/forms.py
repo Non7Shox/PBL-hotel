@@ -83,3 +83,33 @@ class ReviewForm(forms.ModelForm):
         }
         labels = {'rating': "Оценка", 'comment': "Отзыв"}
 
+
+class MatchmakerForm(RoomSearchForm):
+    """Анкета подбора номера: даты, гости, бюджет, пожелания и приоритет."""
+
+    PRIORITY_CHOICES = [
+        ('balance', 'Баланс цены и комфорта'),
+        ('price', 'Главное — цена'),
+        ('comfort', 'Главное — комфорт'),
+    ]
+
+    wishes = forms.ModelMultipleChoiceField(
+        label="Что важно в номере",
+        queryset=None,
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+    )
+    priority = forms.ChoiceField(
+        label="Приоритет",
+        choices=PRIORITY_CHOICES,
+        initial='balance',
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        from .models import Amenity
+
+        super().__init__(*args, **kwargs)
+        del self.fields['floor']
+        self.fields['wishes'].queryset = Amenity.objects.order_by('name')
+        self.fields['max_price'].label = "Бюджет за ночь, $"

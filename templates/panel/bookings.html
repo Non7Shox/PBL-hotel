@@ -1,0 +1,37 @@
+{% extends 'panel/base.html' %}
+{% block panel %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="mb-0">Брони</h1>
+  <a class="btn btn-copper btn-sm" href="{% url 'staff:desk_booking' %}">+ Новая бронь</a>
+</div>
+<form method="get" class="d-flex flex-wrap gap-2 mb-3">
+  <input class="form-control w-auto flex-grow-1" name="q" value="{{ q }}" placeholder="Код, имя, e-mail или телефон">
+  <select class="form-select w-auto" name="status">
+    <option value="">Все статусы</option>
+    {% for value, label in statuses %}<option value="{{ value }}" {% if value == status %}selected{% endif %}>{{ label }}</option>{% endfor %}
+  </select>
+  <button class="btn btn-outline-copper btn-sm">Найти</button>
+</form>
+<div class="panel-card"><div class="table-responsive"><table class="data-table">
+  <thead><tr><th>Код</th><th>Гость</th><th>Даты</th><th>Сумма</th><th>Статус</th><th>Действия</th></tr></thead>
+  <tbody>{% for b in page %}<tr>
+    <td><a href="{% url 'bookings:booking_detail' b.code %}">{{ b.code }}</a></td>
+    <td>{{ b.guest_name }}<br><span class="text-muted">{{ b.room.title }} · {{ b.room.display_number }}</span></td>
+    <td>{{ b.check_in|date:"d.m.Y" }}<br>{{ b.check_out|date:"d.m.Y" }}</td>
+    <td>${{ b.total_price }}<br><span class="text-muted">{{ b.get_payment_status_display }}</span></td>
+    <td><span class="status-chip {{ b.status_css }}">{{ b.get_status_display }}</span></td>
+    <td><div class="d-flex flex-wrap gap-1">{% for value, label in b.actions %}
+      <form method="post" action="{% url 'staff:booking_action' b.pk value %}"{% if value == 'cancelled' %} onsubmit="return confirm('Отменить бронь {{ b.code }}?');"{% endif %}>
+        {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button class="btn btn-outline-copper btn-sm">{{ label }}</button>
+      </form>{% endfor %}</div></td>
+  </tr>{% empty %}<tr><td colspan="6">Ничего не найдено.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% if page.paginator.num_pages > 1 %}
+<div class="d-flex gap-3 align-items-center mt-3">
+  {% if page.has_previous %}<a href="?q={{ q|urlencode }}&status={{ status|urlencode }}&page={{ page.previous_page_number }}">← Назад</a>{% endif %}
+  <span class="muted-label">Стр. {{ page.number }} из {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a href="?q={{ q|urlencode }}&status={{ status|urlencode }}&page={{ page.next_page_number }}">Вперёд →</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -586,6 +586,7 @@
     <ul class="nav-links d-none d-lg-flex">
       <li><a href="{% url 'rooms:room_search' %}" {% if current == 'room_search' %}aria-current="page"{% endif %}>Номера</a></li>
       <li><a href="{% url 'rooms:hotel_floors' %}" {% if current == 'hotel_floors' %}aria-current="page"{% endif %}>Схема этажей</a></li>
+      <li><a href="{% url 'rooms:matchmaker' %}" {% if current == 'matchmaker' %}aria-current="page"{% endif %}>Подбор</a></li>
       <li><a href="{% url 'rooms:room_list' %}#faq">Вопросы</a></li>
       <li><span class="nav-sep d-block" aria-hidden="true"></span></li>
       {% if user.is_authenticated %}
@@ -598,6 +599,7 @@
             <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">Личный кабинет</a></li>
             {% if is_staff_member %}
               <li><hr class="dropdown-divider"></li>
+              {% if is_hotel_admin %}<li><a class="dropdown-item" href="{% url 'panel:home' %}">Админ-панель</a></li>{% endif %}
               <li><a class="dropdown-item" href="{% url 'staff:dashboard' %}">Панель персонала</a></li>
               <li><a class="dropdown-item" href="{% url 'staff:desk_booking' %}">Бронь на стойке</a></li>
             {% endif %}
@@ -629,10 +631,12 @@
     <li><a href="{% url 'rooms:room_list' %}" {% if current == 'room_list' %}aria-current="page"{% endif %}>Главная</a></li>
     <li><a href="{% url 'rooms:room_search' %}" {% if current == 'room_search' %}aria-current="page"{% endif %}>Номера</a></li>
     <li><a href="{% url 'rooms:hotel_floors' %}" {% if current == 'hotel_floors' %}aria-current="page"{% endif %}>Схема этажей</a></li>
+    <li><a href="{% url 'rooms:matchmaker' %}" {% if current == 'matchmaker' %}aria-current="page"{% endif %}>Подбор номера</a></li>
     <li><a href="{% url 'rooms:room_list' %}#faq">Вопросы и ответы</a></li>
     {% if user.is_authenticated %}
       <li><a href="{% url 'bookings:my_bookings' %}" {% if current == 'my_bookings' %}aria-current="page"{% endif %}>Мои брони</a></li>
       <li><a href="{% url 'accounts:profile' %}" {% if current == 'profile' %}aria-current="page"{% endif %}>Личный кабинет</a></li>
+      {% if is_hotel_admin %}<li><a href="{% url 'panel:home' %}">Админ-панель</a></li>{% endif %}
       {% if is_staff_member %}
         <li><a href="{% url 'staff:dashboard' %}">Панель персонала</a></li>
       {% endif %}

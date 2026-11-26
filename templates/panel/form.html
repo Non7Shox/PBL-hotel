@@ -1,0 +1,24 @@
+{% extends 'panel/base.html' %}
+{% block panel %}
+<h1>{{ heading }}</h1>
+<form method="post" enctype="multipart/form-data" class="panel-card">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  {% for field in form %}
+    <div class="mb-3">
+      {% if field.widget_type == 'checkbox' %}
+        <label class="d-flex gap-2 align-items-center">{{ field }} {{ field.label }}</label>
+      {% else %}
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {% if field.widget_type == 'checkboxselectmultiple' %}<div class="check-list">{{ field }}</div>{% else %}{{ field }}{% endif %}
+      {% endif %}
+      {% if field.help_text %}<div class="muted-label">{{ field.help_text|safe }}</div>{% endif %}
+      {% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+    </div>
+  {% endfor %}
+  <div class="d-flex gap-2">
+    <button class="btn btn-copper px-4">Сохранить</button>
+    <a class="btn btn-outline-copper" href="{{ back_url }}">Отмена</a>
+  </div>
+</form>
+{% endblock %}
